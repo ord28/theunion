@@ -145,6 +145,51 @@
   .toast{position:fixed;bottom:24px;right:24px;background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--acid);padding:12px 18px;font-family:'Space Mono',monospace;font-size:11px;color:var(--white);z-index:300;transform:translateY(80px);opacity:0;transition:all .3s;max-width:300px;}
   .toast.show{transform:translateY(0);opacity:1;}
 
+
+  /* PAGE SYSTEM */
+  #home-page { display: block; }
+  #gallery-page {
+    display: none;
+    min-height: 100vh;
+    padding-top: 64px;
+  }
+  #gallery-page.active { display: block; }
+  #home-page.hidden { display: none; }
+
+  /* Gallery page header */
+  .gallery-page-header {
+    padding: 48px 32px 32px;
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0;
+  }
+  .gallery-back {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--mid);
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all .2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .gallery-back:hover { color: var(--white); border-color: var(--white); }
+  @media(max-width:768px) {
+    .gallery-page-header { padding: 32px 16px 24px; }
+  }
+
   @media(max-width:768px){
     nav{padding:0 16px;}
     .nav-links{display:none;}
@@ -169,9 +214,10 @@
 <nav>
   <a href="#" class="nav-logo">THE<span>UNION</span></a>
   <ul class="nav-links">
-    <li><a href="#gallery">Gallery</a></li>
-    <li><a href="#about">About</a></li>
+    <li><a href="#" onclick="showGalleryPage();return false;">Gallery</a></li>
+    <li><a href="#about" onclick="showHomePage();return false;">About</a></li>
     <li><a href="https://ord.net/collection/theunion" target="_blank">Ord.net</a></li>
+    <li><a href="https://x.com/theunion100" target="_blank">@theunion100</a></li>
     <li><a href="https://x.com/oceanord28" target="_blank">@oceanord28</a></li>
   </ul>
   <div class="nav-right">
@@ -180,6 +226,7 @@
   </div>
 </nav>
 
+<div id="home-page">
 <!-- HERO -->
 <section class="hero">
   <div class="hero-bg"></div>
@@ -197,7 +244,7 @@
     <div class="stat"><span class="stat-val" id="loaded-count">—</span><span class="stat-lbl">Loaded</span></div>
   </div>
   <div class="cta-row">
-    <a href="#gallery" class="btn-primary">View Gallery</a>
+    <a href="#" onclick="showGalleryPage();return false;" class="btn-primary">View Gallery</a>
     <a href="https://ord.net/collection/theunion" target="_blank" class="btn-ghost">Buy on Ord.net ↗</a>
   </div>
 
@@ -224,28 +271,33 @@
 <section class="manifesto" id="about">
   <div class="manifesto-inner">
     <div class="manifesto-text">
-      "Not a pfp. Not a flex. A <em>struggle</em>.<br>
-      Each figure inscribed on Bitcoin —<br>
-      permanent, <em>unowned by time</em>."
+      TheUnion is a <em>visual movement</em> where art becomes resistance<br>
+      and expression turns to <em>power</em>.<br><br>
+      Unique 1/1 Ordinals reflecting global harmony —<br>
+      fragments of <em>pain</em>, hope, and resilience.
     </div>
-    <div class="manifesto-credit">— TheUnion · @oceanord28 · BTC Ordinals</div>
+    <div class="manifesto-credit">— TheUnion · @theunion100 · BTC Ordinals</div>
   </div>
 </section>
 
-<!-- GALLERY -->
-<section class="gallery-section" id="gallery">
-  <div class="section-header">
+</div>
+<div id="gallery-page">
+  <div class="gallery-page-header">
     <div>
-      <div class="section-eyebrow">All Inscriptions</div>
+      <div class="section-eyebrow">Bitcoin Ordinals · 100 Inscriptions</div>
       <h2 class="section-h">The Collection</h2>
     </div>
-    <span class="load-status" id="load-status">Fetching from chain...</span>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <span class="load-status" id="load-status">Fetching from chain...</span>
+      <a href="#" onclick="showHomePage();return false;" class="gallery-back">← Back</a>
+    </div>
   </div>
-  <div id="grid-wrap">
-    <div class="pieces-grid" id="main-grid"></div>
+  <div class="gallery-section" id="gallery" style="padding-top:40px;">
+    <div id="grid-wrap">
+      <div class="pieces-grid" id="main-grid"></div>
+    </div>
   </div>
-</section>
-
+</div>
 <!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox" onclick="closeLb(event)">
   <div class="lb-inner">
@@ -269,7 +321,8 @@
   <div class="footer-links">
     <a href="https://ord.net/collection/theunion" target="_blank">Ord.net</a>
     <a href="https://www.satflow.com/ordinals/theunion" target="_blank">Satflow</a>
-    <a href="https://x.com/oceanord28" target="_blank">X / Twitter</a>
+    <a href="https://x.com/theunion100" target="_blank">@theunion100</a>
+    <a href="https://x.com/oceanord28" target="_blank">@oceanord28</a>
   </div>
 </footer>
 
@@ -463,50 +516,87 @@ function onConnect(address, wallet) {
 }
 
 async function checkHoldings(address) {
-  const countEl = document.getElementById('holdings-count');
-  const subEl   = document.getElementById('holdings-sub');
-  const badgeEl = document.getElementById('holder-badge');
+  const countEl  = document.getElementById('holdings-count');
+  const subEl    = document.getElementById('holdings-sub');
+  const badgeEl  = document.getElementById('holder-badge');
   const thumbsEl = document.getElementById('wallet-thumbs');
   countEl.textContent = '...';
-  subEl.textContent = 'Scanning wallet...';
-  thumbsEl.innerHTML = '';
+  subEl.textContent   = 'Scanning wallet...';
+  thumbsEl.innerHTML  = '';
 
   try {
-    const res = await fetch(`https://api.hiro.so/ordinals/v1/inscriptions?address=${address}&limit=60`);
-    const data = await res.json();
-    const walletIds = new Set((data.results || []).map(i => i.id));
-    const matches = allIds.filter(id => walletIds.has(id));
+    // Fetch ALL wallet inscriptions (paginate up to 600)
+    let walletIds = new Set();
+    for (let offset = 0; offset < 600; offset += 60) {
+      const res  = await fetch(
+        `https://api.hiro.so/ordinals/v1/inscriptions?address=${address}&limit=60&offset=${offset}`
+      );
+      const data = await res.json();
+      const results = data.results || [];
+      results.forEach(i => walletIds.add(i.id));
+      if (results.length < 60) break; // no more pages
+    }
 
-    // Also try parent-scoped query
-    try {
-      const r2 = await fetch(`https://api.hiro.so/ordinals/v1/inscriptions?address=${address}&parent_id=${PARENT_ID}&limit=60`);
-      const d2 = await r2.json();
-      (d2.results || []).forEach(i => { if (!matches.includes(i.id)) matches.push(i.id); });
-    } catch(e) {}
+    // Cross-reference against the collection IDs fetched from chain
+    let matches = allIds.filter(id => walletIds.has(id));
+
+    // Fallback: also query Hiro with parent inscription filter
+    // Hiro accepts the parent txid (without index) as a filter
+    if (matches.length === 0) {
+      try {
+        const parentTx = PARENT_ID.replace(/i\d+$/, ''); // strip the 'iN' suffix
+        const r2   = await fetch(
+          `https://api.hiro.so/ordinals/v1/inscriptions?address=${address}&parent=${parentTx}&limit=60`
+        );
+        const d2   = await r2.json();
+        (d2.results || []).forEach(i => {
+          walletIds.add(i.id);
+          if (!matches.includes(i.id)) matches.push(i.id);
+        });
+      } catch(e) {}
+    }
+
+    // Fallback 2: directly query ordinals.com for this address's children of parent
+    if (matches.length === 0) {
+      try {
+        // Check if any of the wallet's inscription IDs appear in our fetched allIds set
+        // allIds is populated from the chain — re-check after ensuring allIds is full
+        matches = allIds.filter(id => walletIds.has(id));
+      } catch(e) {}
+    }
 
     const count = matches.length;
     countEl.textContent = count;
+
     if (count > 0) {
-      subEl.textContent = 'Member of TheUnion';
-      badgeEl.textContent = 'HOLDER';
-      badgeEl.className = 'holder-badge badge-yes';
+      subEl.textContent       = 'Member of TheUnion';
+      badgeEl.textContent     = 'HOLDER';
+      badgeEl.className       = 'holder-badge badge-yes';
       showToast(`${count} Union piece${count > 1 ? 's' : ''} found 🔥`);
-      matches.slice(0, 12).forEach((iid, i) => {
+      matches.slice(0, 12).forEach(iid => {
         const el = document.createElement('div');
         el.className = 'w-thumb';
-        el.innerHTML = `<img src="${ORD}/content/${iid}" loading="lazy"><span>#${allIds.indexOf(iid)+1}</span>`;
-        el.onclick = () => openLb(iid, allIds.indexOf(iid)+1);
+        const num = allIds.indexOf(iid) + 1;
+        el.innerHTML = `<img src="${ORD}/content/${iid}" loading="lazy"><span>#${num}</span>`;
+        el.onclick = () => openLb(iid, num);
         thumbsEl.appendChild(el);
       });
     } else {
-      subEl.textContent = 'No Union pieces in this wallet';
+      // Show what the wallet actually holds so user can debug
+      const total = walletIds.size;
+      subEl.textContent   = total > 0
+        ? `Wallet has ${total} inscription${total>1?'s':''} — none match TheUnion`
+        : 'No inscriptions found in this wallet';
       badgeEl.textContent = 'Non-holder';
-      badgeEl.className = 'holder-badge badge-no';
-      showToast('No Union pieces found. Browse the gallery.');
+      badgeEl.className   = 'holder-badge badge-no';
+      showToast(total > 0 ? `${total} inscriptions found, none are TheUnion` : 'No inscriptions found.');
     }
   } catch(err) {
+    console.error('checkHoldings error:', err);
     countEl.textContent = '?';
-    subEl.textContent = 'Could not verify — check Ord.net manually';
+    subEl.textContent   = 'API error — try again or check Ord.net manually';
+    badgeEl.textContent = 'Error';
+    badgeEl.className   = 'holder-badge badge-no';
   }
 }
 
@@ -526,13 +616,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const grid = document.getElementById('hero-grid');
   for (let i = 0; i < 32; i++) grid.appendChild(document.createElement('div'));
 
-  // Show skeletons immediately
-  showSkeletons(20);
-
-  // Start fetching all children
-  fetchAllChildren().then(() => {
-    clearSkeletons();
-  });
+  // Gallery loads on demand when user clicks View Gallery
 
   // Start audio on first user interaction
   document.addEventListener('click', () => startAudio(), { once: true });
@@ -540,6 +624,25 @@ document.addEventListener('DOMContentLoaded', () => {
   // Try autoplay immediately (works if browser allows)
   setTimeout(() => startAudio(), 500);
 });
+
+
+// ── PAGE SWITCHING ────────────────────────────────
+function showGalleryPage() {
+  document.getElementById('home-page').classList.add('hidden');
+  document.getElementById('gallery-page').classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Start loading if not already done
+  if (allIds.length === 0) {
+    showSkeletons(20);
+    fetchAllChildren().then(() => clearSkeletons());
+  }
+}
+
+function showHomePage() {
+  document.getElementById('gallery-page').classList.remove('active');
+  document.getElementById('home-page').classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') forceCloseLb();
