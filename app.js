@@ -11,7 +11,9 @@ let muted = false;
 audio.volume = 0.22; // very low — ambient
 
 function startAudio() {
-  audio.play().catch(() => {});
+  if (audio.paused) {
+    audio.play().catch(() => {});
+  }
 }
 
 function toggleMute() {
@@ -297,11 +299,12 @@ document.addEventListener('DOMContentLoaded', () => {
   fetchBtcPrice();
   setInterval(fetchBtcPrice, 60000);
 
-  // Start audio on first user interaction
-  document.addEventListener('click', () => startAudio(), { once: true });
-  document.addEventListener('keydown', () => startAudio(), { once: true });
-  // Try autoplay immediately (works if browser allows)
-  setTimeout(() => startAudio(), 500);
+  // Try autoplay immediately
+  setTimeout(() => startAudio(), 800);
+  // Fallback: start on first any interaction
+  ['click','keydown','touchstart','scroll'].forEach(evt =>
+    document.addEventListener(evt, () => startAudio(), { once: true, passive: true })
+  );
 });
 
 
