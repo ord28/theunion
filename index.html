@@ -204,34 +204,37 @@ nav {
   display:flex; flex-direction:column; align-items:center; gap:8px; opacity:.35;
 }
 .scroll-hint span { font-size:9px; letter-spacing:.2em; text-transform:uppercase; color:var(--mid); }
-.scroll-line { width:1px; height:40px; background:var(--muted); position:relative; overflow:hidden; }
+.scroll-line {
+  width:2px; height:56px;
+  background: rgba(200,255,0,0.15);
+  position:relative; overflow:hidden;
+  box-shadow: 0 0 8px rgba(200,255,0,0.4), 0 0 20px rgba(200,255,0,0.2);
+}
 .scroll-line::after {
   content:''; position:absolute; top:-100%; left:0; width:100%; height:100%;
-  background:var(--acid); animation:scrollDown 1.5s infinite;
+  background: linear-gradient(to bottom, transparent, var(--acid), transparent);
+  animation:scrollDown 1.2s ease-in-out infinite;
+  box-shadow: 0 0 12px var(--acid), 0 0 24px var(--acid);
 }
 @keyframes scrollDown { 0% { top:-100%; } 100% { top:100%; } }
 
 /* ── WALLET PANEL ───────────────────────────── */
 .wallet-panel {
   display:none; background:var(--panel); border:1px solid var(--border);
-  padding:20px 24px; margin-top:28px; max-width:480px; width:100%;
+  border-left:3px solid var(--acid);
+  padding:16px 20px; margin-top:24px; max-width:420px; width:100%;
   position:relative;
 }
 .wallet-panel.visible { display:block; }
-.wallet-panel::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--acid); }
-.wallet-addr { font-family:'Space Mono',monospace; font-size:9px; color:var(--dim); margin-bottom:14px; word-break:break-all; }
-.holdings-row { display:flex; align-items:center; gap:14px; }
-.holdings-num { font-family:'Space Mono',monospace; font-size:48px; font-weight:700; color:var(--acid); line-height:1; }
+.wallet-addr { font-family:'Space Mono',monospace; font-size:9px; color:var(--dim); margin-bottom:12px; word-break:break-all; }
+.holdings-row { display:flex; align-items:center; gap:16px; }
+.holdings-num { font-family:'Space Mono',monospace; font-size:52px; font-weight:700; color:var(--acid); line-height:1; min-width:56px; }
 .holdings-info { flex:1; }
-.holdings-title { font-size:12px; font-weight:600; color:var(--white); margin-bottom:3px; }
-.holdings-sub { font-size:11px; color:var(--dim); }
-.holder-badge { padding:4px 10px; font-family:'Space Mono',monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; font-weight:700; }
-.badge-yes { background:rgba(200,255,0,.1); color:var(--acid); border:1px solid rgba(200,255,0,.3); }
-.badge-no  { background:rgba(85,85,85,.15); color:var(--dim); border:1px solid var(--border); }
-.wallet-thumbs { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
-.w-thumb { width:52px; height:52px; background:var(--muted); overflow:hidden; position:relative; border:1px solid var(--border); cursor:pointer; }
-.w-thumb img { width:100%; height:100%; object-fit:cover; }
-.w-thumb span { position:absolute; bottom:1px; left:3px; font-family:'Space Mono',monospace; font-size:7px; color:var(--white); background:rgba(0,0,0,.75); padding:1px 2px; }
+.holdings-title { font-size:11px; font-weight:600; color:var(--white); margin-bottom:3px; letter-spacing:.05em; }
+.holdings-sub { font-size:10px; color:var(--dim); }
+.holder-badge { padding:4px 10px; font-family:'Space Mono',monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; font-weight:700; white-space:nowrap; }
+.badge-yes { background:rgba(200,255,0,.12); color:var(--acid); border:1px solid rgba(200,255,0,.35); }
+.badge-no  { background:rgba(85,85,85,.12); color:var(--dim); border:1px solid var(--border); }
 
 /* ── GALLERY PAGE ───────────────────────────── */
 .gallery-page-header {
@@ -390,26 +393,58 @@ body.light #wallet-btn { background:var(--acid); color:#fff; }
 
 /* ── MOBILE ─────────────────────────────────── */
 @media(max-width:768px) {
-  :root { --tab-w: 38px; }
-  nav { padding:0 12px 0 calc(var(--tab-w) + 10px); height:56px; }
-  .hero { padding:72px 18px 72px 18px; }
-  .hero-title { font-size:clamp(52px,16vw,100px); }
-  .hero-sub { font-size:13px; }
-  .stats-row { gap:18px; }
-  .stat-val { font-size:22px; }
-  .cta-row { flex-direction:column; align-items:center; }
-  .btn-primary, .btn-ghost { width:100%; max-width:280px; justify-content:center; }
-  .gallery-page-header { padding:40px 16px 24px calc(var(--tab-w) + 16px); }
-  .gallery-section { padding:24px 12px 60px calc(var(--tab-w) + 12px); }
-  .pieces-grid { grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); }
-  .lb-inner { grid-template-columns:1fr; }
-  footer { padding:28px 16px 28px calc(var(--tab-w) + 16px); flex-direction:column; text-align:center; }
-  .footer-links { justify-content:center; }
-  .about-inner { padding:48px 16px 72px calc(var(--tab-w) + 16px); }
+  :root { --tab-w: 40px; }
+
+  /* NAV */
+  nav { padding:0 12px; height:56px; }
+  #wallet-btn { margin-left:auto; font-size:10px; padding:8px 14px; }
+
+  /* HERO — centered, no left offset */
+  .hero { padding:70px 16px 70px 16px; min-height:100svh; }
+  .hero-eyebrow { font-size:10px; letter-spacing:.18em; }
+  .hero-title { font-size:clamp(50px,15vw,90px); }
+  .hero-sub { font-size:13px; max-width:100%; }
+  .stats-row { gap:16px; }
+  .stat-val { font-size:20px; }
+  .stat-lbl { font-size:9px; }
+  .cta-row { flex-direction:column; align-items:center; width:100%; }
+  .btn-primary, .btn-ghost { width:80%; max-width:260px; justify-content:center; }
+
+  /* WALLET PANEL */
+  .wallet-panel { padding:14px 16px; }
+  .holdings-num { font-size:40px; }
+
+  /* GALLERY */
+  .gallery-page-header { padding:36px 14px 20px calc(var(--tab-w) + 14px); flex-direction:column; align-items:flex-start; }
+  .gallery-section { padding:20px 10px 60px calc(var(--tab-w) + 10px); }
+  .pieces-grid { grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:1px; }
+
+  /* LIGHTBOX */
+  .lb-inner { grid-template-columns:1fr; max-height:95vh; }
+  .lb-meta { padding:16px; }
+
+  /* FOOTER */
+  footer { padding:24px 14px 24px calc(var(--tab-w) + 14px); flex-direction:column; text-align:center; }
+  .footer-links { justify-content:center; gap:12px; flex-wrap:wrap; }
+
+  /* ABOUT */
+  .about-inner { padding:44px 14px 64px calc(var(--tab-w) + 14px); }
+  .about-title { font-size:clamp(36px,11vw,60px); }
+  .about-statement { font-size:14px; padding-left:16px; }
+  .about-stats { grid-template-columns:1fr 1fr; }
+  .about-link-url { display:none; }
+
+  /* BOTTOM BAR */
   .bb-center { gap:6px; }
-  .bb-price { font-size:9px; }
-  .bb-floor { font-size:9px; }
+  .bb-price, .bb-floor { font-size:9px; }
   .bb-sep { display:none; }
+}
+
+@media(max-width:380px) {
+  .hero-title { font-size:clamp(44px,18vw,72px); }
+  .stats-row { gap:10px; }
+  .stat-val { font-size:18px; }
+  .btn-primary, .btn-ghost { width:90%; }
 }
 </style>
 </head>
@@ -440,7 +475,7 @@ body.light #wallet-btn { background:var(--acid); color:#fff; }
     <li><a href="https://x.com/oceanord28" target="_blank"><span class="sd-icon"><svg viewBox="0 0 24 24" width="12" height="12" style="fill:currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></span>@oceanord28</a></li>
     <li><a href="https://x.com/theunion100" target="_blank"><span class="sd-icon"><svg viewBox="0 0 24 24" width="12" height="12" style="fill:currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></span>@theunion100</a></li>
   </ul>
-  <div class="sd-footer">TheUnion on Bitcoin</div>
+  <div class="sd-footer" style="color:var(--orange);">TheUnion on Bitcoin</div>
 </div>
 
 <!-- NAV -->
@@ -472,13 +507,12 @@ body.light #wallet-btn { background:var(--acid); color:#fff; }
         <div class="holdings-num" id="holdings-count">0</div>
         <div class="holdings-info">
           <div class="holdings-title">UNION pieces held</div>
-          <div class="holdings-sub" id="holdings-sub">No pieces detected</div>
+          <div class="holdings-sub" id="holdings-sub">Checking...</div>
         </div>
-        <span class="holder-badge badge-no" id="holder-badge">Non-holder</span>
+        <span class="holder-badge badge-no" id="holder-badge">—</span>
       </div>
-      <div class="wallet-thumbs" id="wallet-thumbs"></div>
     </div>
-    <div class="scroll-hint"><span>Scroll</span><div class="scroll-line"></div></div>
+    <div class="scroll-hint"><div class="scroll-line"></div></div>
   </section>
   <footer>
     <div class="footer-logo">THE<span>UNION</span></div>
@@ -573,7 +607,7 @@ body.light #wallet-btn { background:var(--acid); color:#fff; }
   </div>
   <div class="bb-right">
     <button class="bb-btn" id="theme-btn" onclick="toggleTheme()">🌙</button>
-    <button class="bb-btn" id="mute-btn" onclick="toggleMute()">♪</button>
+    <button class="bb-btn" id="mute-btn" type="button">♪</button>
   </div>
 </div>
 
@@ -599,6 +633,10 @@ function showPage(name) {
     showSkeletons(20);
     fetchAllChildren();
   }
+  // Pre-fetch collection count for home page stat even if gallery not visited
+  if (!galleryLoaded && name === 'home') {
+    prefetchCount();
+  }
 }
 
 // ── SIDE DRAWER ───────────────────────────────
@@ -622,41 +660,34 @@ document.addEventListener('click', e => {
 
 // ── AUDIO ─────────────────────────────────────
 const bgAudio = document.getElementById('bg-audio');
-let muted     = false;
-let audioOn   = false;
 bgAudio.volume = 0.22;
+let audioStarted = false;
+let audioMuted   = false;
 
 function startAudio() {
-  if (audioOn) return;
+  if (audioStarted) return;
   bgAudio.play().then(() => {
-    audioOn = true;
+    audioStarted = true;
+    document.getElementById('mute-btn').textContent = '♪';
   }).catch(() => {});
 }
 
 function toggleMute() {
-  if (!audioOn) { startAudio(); return; }
-  muted = !muted;
-  bgAudio.muted = muted;
-  document.getElementById('mute-btn').textContent = muted ? '🔇' : '♪';
+  // If audio hasn't started yet, start it
+  if (!audioStarted) {
+    startAudio();
+    return;
+  }
+  audioMuted = !audioMuted;
+  bgAudio.muted = audioMuted;
+  document.getElementById('mute-btn').textContent = audioMuted ? '🔇' : '♪';
 }
 
-// Side tab click also starts audio (user gesture = unlocks iOS)
-sideTab.addEventListener('click', () => {
-  bgAudio.play().catch(() => {});
-});
+// Wire side tab to start audio on click (iOS user gesture)
+sideTab.addEventListener('click', startAudio);
 
-// Start on first user interaction anywhere
-function firstGesture() {
-  startAudio();
-  ['touchend','click','keydown'].forEach(e =>
-    document.removeEventListener(e, firstGesture)
-  );
-}
-['touchend','click','keydown'].forEach(e =>
-  document.addEventListener(e, firstGesture, { passive: true })
-);
-// Try immediate autoplay (works on desktop)
-setTimeout(() => startAudio(), 500);
+// Desktop: try autoplay after short delay
+setTimeout(startAudio, 600);
 
 // ── THEME ─────────────────────────────────────
 function toggleTheme() {
@@ -673,19 +704,44 @@ if (localStorage.getItem('union-theme') === 'light') {
 let btcUsd = null;
 let curMode = 'crypto';
 
+// Load cached price instantly on start
+const _cached = localStorage.getItem('union_btc_price');
+if (_cached) { btcUsd = parseFloat(_cached); updatePrices(); }
+
+function fetchWithTimeout(url, ms = 4000) {
+  return Promise.race([
+    fetch(url),
+    new Promise((_, reject) => setTimeout(() => reject('timeout'), ms))
+  ]);
+}
+
 async function fetchBTC() {
-  const apis = [
-    () => fetch('https://api.coinbase.com/v2/prices/BTC-USD/spot').then(r=>r.json()).then(d=>parseFloat(d.data?.amount)),
-    () => fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT').then(r=>r.json()).then(d=>parseFloat(d.price)),
-    () => fetch('https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD').then(r=>r.json()).then(d=>d.USD),
-    () => fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd').then(r=>r.json()).then(d=>d.bitcoin?.usd),
-  ];
-  for (const api of apis) {
-    try {
-      const p = await api();
-      if (p > 0) { btcUsd = p; updatePrices(); return; }
-    } catch(e) { continue; }
-  }
+  try {
+    // Primary: CoinGecko
+    const res  = await fetchWithTimeout(
+      'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd'
+    );
+    const data = await res.json();
+    const p    = data.bitcoin?.usd;
+    if (p > 0) {
+      btcUsd = p;
+      localStorage.setItem('union_btc_price', p);
+      updatePrices();
+      return;
+    }
+  } catch(e) {}
+
+  try {
+    // Fallback: CoinCap
+    const res  = await fetchWithTimeout('https://api.coincap.io/v2/assets/bitcoin');
+    const data = await res.json();
+    const p    = parseFloat(data.data?.priceUsd);
+    if (p > 0) {
+      btcUsd = p;
+      localStorage.setItem('union_btc_price', p);
+      updatePrices();
+    }
+  } catch(e) {}
 }
 
 function updatePrices() {
@@ -714,6 +770,32 @@ document.getElementById('bb-currency').addEventListener('click', () => {
 
 fetchBTC();
 setInterval(fetchBTC, 60000);
+
+
+// ── PREFETCH COUNT for home page stat ─────────
+async function prefetchCount() {
+  if (allIds.length > 0) return; // already loaded
+  try {
+    const res  = await fetch(`${ORD}/r/children/${PARENT}`);
+    const data = await res.json();
+    const ids  = data.ids || [];
+    ids.forEach(id => { if (!seenIds.has(id)) { seenIds.add(id); allIds.push(id); } });
+    const el = document.getElementById('stat-loaded');
+    if (el) el.textContent = allIds.length;
+    // Keep fetching more pages silently
+    if (data.more) {
+      let page = 1;
+      while (true) {
+        const r2   = await fetch(`${ORD}/r/children/${PARENT}/${page}`);
+        const d2   = await r2.json();
+        (d2.ids||[]).forEach(id => { if (!seenIds.has(id)) { seenIds.add(id); allIds.push(id); } });
+        if (el) el.textContent = allIds.length;
+        if (!d2.more || (d2.ids||[]).length === 0) break;
+        page++;
+      }
+    }
+  } catch(e) {}
+}
 
 // ── GALLERY — fetch all children ──────────────
 let allIds   = [];
@@ -860,42 +942,43 @@ function onConnect(address, wallet) {
 }
 
 async function checkHoldings(address) {
-  const countEl  = document.getElementById('holdings-count');
-  const subEl    = document.getElementById('holdings-sub');
-  const badgeEl  = document.getElementById('holder-badge');
-  const thumbsEl = document.getElementById('wallet-thumbs');
-  countEl.textContent = '...'; subEl.textContent = 'Scanning...'; thumbsEl.innerHTML = '';
+  const countEl = document.getElementById('holdings-count');
+  const subEl   = document.getElementById('holdings-sub');
+  const badgeEl = document.getElementById('holder-badge');
+  if (!countEl) return;
+  countEl.textContent = '...';
+  subEl.textContent   = 'Scanning...';
+  badgeEl.textContent = '—';
+  badgeEl.className   = 'holder-badge badge-no';
+
   try {
+    // Fetch wallet inscriptions (paginate up to 600)
     let walletIds = new Set();
     for (let offset = 0; offset < 600; offset += 60) {
-      const res  = await fetch(`https://api.hiro.so/ordinals/v1/inscriptions?address=${address}&limit=60&offset=${offset}`);
-      const data = await res.json();
-      const results = data.results||[];
+      const res     = await fetch(`https://api.hiro.so/ordinals/v1/inscriptions?address=${address}&limit=60&offset=${offset}`);
+      const data    = await res.json();
+      const results = data.results || [];
       results.forEach(i => walletIds.add(i.id));
       if (results.length < 60) break;
     }
-    const matches = allIds.filter(id => walletIds.has(id));
-    countEl.textContent = matches.length;
-    if (matches.length > 0) {
-      subEl.textContent = 'Member of TheUnion';
-      badgeEl.textContent = 'HOLDER'; badgeEl.className = 'holder-badge badge-yes';
-      showToast(`${matches.length} Union piece${matches.length>1?'s':''} found 🔥`);
-      matches.slice(0,12).forEach((iid,i) => {
-        const el = document.createElement('div');
-        el.className = 'w-thumb';
-        const n = allIds.indexOf(iid)+1;
-        el.innerHTML = `<img src="${ORD}/content/${iid}" loading="lazy"><span>#${n}</span>`;
-        el.addEventListener('click', () => openLb(iid, n));
-        thumbsEl.appendChild(el);
-      });
+    // Cross-reference with TheUnion collection IDs
+    const count = allIds.filter(id => walletIds.has(id)).length;
+    countEl.textContent = count;
+
+    if (count > 0) {
+      subEl.textContent   = count === 1 ? '1 Union piece' : `${count} Union pieces`;
+      badgeEl.textContent = 'HOLDER';
+      badgeEl.className   = 'holder-badge badge-yes';
+      showToast(`${count} Union piece${count > 1 ? 's' : ''} found 🔥`);
     } else {
-      subEl.textContent = walletIds.size > 0
-        ? `${walletIds.size} inscriptions — none are TheUnion`
-        : 'No inscriptions in this wallet';
-      badgeEl.textContent = 'Non-holder'; badgeEl.className = 'holder-badge badge-no';
+      subEl.textContent   = 'No Union pieces found';
+      badgeEl.textContent = 'Non-holder';
+      badgeEl.className   = 'holder-badge badge-no';
     }
   } catch(e) {
-    countEl.textContent = '?'; subEl.textContent = 'Check Ord.net manually';
+    countEl.textContent = '?';
+    subEl.textContent   = 'Could not verify';
+    badgeEl.textContent = 'Error';
   }
 }
 
@@ -910,7 +993,11 @@ function showToast(msg) {
 
 // ── INIT ──────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  // Wire mute button directly
+  document.getElementById('mute-btn').onclick = toggleMute;
+
   // Hero grid
+  prefetchCount(); // load count for home page stat
   const g = document.getElementById('hero-grid');
   for (let i = 0; i < 32; i++) g.appendChild(document.createElement('div'));
 });
