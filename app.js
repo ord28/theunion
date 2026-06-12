@@ -11,9 +11,13 @@ let muted = false;
 audio.volume = 0.22; // very low — ambient
 
 function startAudio() {
-  if (audio.paused) {
-    audio.play().catch(() => {});
-  }
+  if (!audio.paused) return;
+  // iOS requires user gesture — resume AudioContext if suspended
+  audio.play().then(() => {
+    console.log('Audio playing');
+  }).catch(e => {
+    console.log('Audio blocked:', e);
+  });
 }
 
 function toggleMute() {
