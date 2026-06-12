@@ -383,9 +383,12 @@
 
   @media(max-width: 768px) {
     .hero-bg {
-      background-position: center center !important;
+      background-position: 50% 50% !important;
       background-size: cover !important;
       background-attachment: scroll !important;
+      left: 0 !important;
+      right: 0 !important;
+      width: 100% !important;
     }
   }
 
@@ -530,9 +533,9 @@
     nav { padding: 0 12px; }
     .nav-links { display: none; }
 
-    /* Hero — clear the 44px side tab, center content */
+    /* Hero — center on mobile, minimal padding */
     .hero {
-      padding: 80px 24px 80px 60px;
+      padding: 80px 20px 80px 20px;
       min-height: 100svh;
     }
     .hero-title { font-size: clamp(52px, 18vw, 100px); }
