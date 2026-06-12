@@ -740,7 +740,6 @@ body.light #wallet-btn { background:var(--acid); color:#fff; }
 
 <script>
 const ORD = 'https://ordinals.com';
-const PARENT = '2f0731248115d5472d6b554aad5073a96a960e0b5b39618e5f6d5e43cfd3b217i0';
 const FLOOR_BTC = 0.002;
 
 // ── PAGES ─────────────────────────────────────
@@ -970,34 +969,66 @@ async function prefetchCount() {
 }
 
 // ── GALLERY — fetch all children ──────────────
+const ORD    = 'https://ordinals.com';
+const PARENT = '2f0731248115d5472d6b554aad5073a96a960e0b5b39618e5f6d5e43cfd3b217i0';
 let allIds   = [];
 let seenIds  = new Set();
 let cardCount = 0;
 
 async function fetchAllChildren() {
-  let page = 0, more = true;
+  let page = 0;
+  let more = true;
+
   while (more) {
     try {
-      const url = page === 0
+      // Try JSON endpoint first
+      const url  = page === 0
         ? `${ORD}/r/children/${PARENT}`
         : `${ORD}/r/children/${PARENT}/${page}`;
-      const res  = await fetch(url);
-      if (!res.ok) break;
+
+      const res  = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (!res.ok) throw new Error('not ok');
       const data = await res.json();
       const ids  = (data.ids || []).filter(id => !seenIds.has(id));
       ids.forEach(id => seenIds.add(id));
       allIds = [...allIds, ...ids];
       if (ids.length) appendCards(ids);
+      more = !!(data.more) && (data.ids||[]).length > 0;
+      const sl = document.getElementById('load-status');
+      if (sl) sl.textContent = allIds.length + ' inscriptions';
       const el = document.getElementById('stat-loaded');
       if (el) el.textContent = allIds.length;
-      const st = document.getElementById('load-status');
-      if (st) st.textContent = allIds.length + ' inscriptions';
-      more = data.more || false;
-      if (!more || (data.ids||[]).length === 0) break;
       page++;
-    } catch(e) { break; }
+      if (page > 15) break; // safety cap
+    } catch(e) {
+      // Fallback: parse HTML children page
+      try {
+        const url  = page === 0
+          ? `${ORD}/children/${PARENT}`
+          : `${ORD}/children/${PARENT}/${page}`;
+        const res  = await fetch(url);
+        if (!res.ok) break;
+        const text = await res.text();
+        const matches = [...text.matchAll(/href="\/inscription\/([a-f0-9]{64}i\d+)"/g)];
+        const ids = matches.map(m => m[1]).filter(id => !seenIds.has(id));
+        if (ids.length === 0) break;
+        ids.forEach(id => seenIds.add(id));
+        allIds = [...allIds, ...ids];
+        appendCards(ids);
+        const sl = document.getElementById('load-status');
+        if (sl) sl.textContent = allIds.length + ' inscriptions';
+        const el = document.getElementById('stat-loaded');
+        if (el) el.textContent = allIds.length;
+        // If fewer than 15 returned, likely last page
+        if (ids.length < 15) break;
+        page++;
+        if (page > 15) break;
+      } catch(e2) { break; }
+    }
   }
   clearSkeletons();
+  const sl = document.getElementById('load-status');
+  if (sl) sl.textContent = allIds.length + ' inscriptions loaded';
 }
 
 function appendCards(ids) {
