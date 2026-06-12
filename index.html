@@ -9,10 +9,10 @@
 <body>
 
 <!-- AMBIENT PEACE AUDIO — autoplay low volume -->
-<audio id="ambient" loop preload="auto" crossorigin="anonymous">
+<audio id="ambient" loop preload="auto">
   <!-- Gymnopédie No.1 — Erik Satie, public domain -->
-  <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_d0ef7c5c8f.mp3" type="audio/mpeg">
-  <source src="https://cdn.pixabay.com/audio/2023/01/20/audio_1a609c3b74.mp3" type="audio/mpeg">
+  <source src="https://ia800905.us.archive.org/8/items/GymnopedesAndGnossiennes/01GymnopdieNo.1.mp3" type="audio/mpeg">
+  <source src="https://cdn.pixabay.com/audio/2022/08/02/audio_884fe92c21.mp3" type="audio/mpeg">
 </audio>
 
 
@@ -177,17 +177,17 @@
 
 
 <div id="about-page" style="display:none;min-height:100vh;padding-top:64px;">
-  <div style="max-width:860px;margin:0 auto;padding:80px 32px;">
+  <div class="about-inner">
 
     <!-- Back -->
-    <a href="#" onclick="showHomePage();return false;" class="gallery-back" style="margin-bottom:56px;display:inline-flex;">← Back</a>
+    <a href="#" onclick="showHomePage();return false;" class="gallery-back about-back">← Back</a>
 
     <!-- Title -->
-    <div style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--acid);margin-bottom:16px;margin-top:40px;">About</div>
-    <h1 style="font-family:'Space Mono',monospace;font-size:clamp(36px,7vw,80px);font-weight:700;line-height:.95;color:var(--white);margin-bottom:48px;">THE<br><span style="color:transparent;-webkit-text-stroke:1.5px var(--white);">UNION</span></h1>
+    <div class="about-eyebrow">About</div>
+    <h1 class="about-title">THE<br><span class="about-title-outline">UNION</span></h1>
 
     <!-- Statement -->
-    <div style="font-size:clamp(16px,2vw,22px);line-height:1.8;color:#ccc;margin-bottom:64px;border-left:2px solid var(--acid);padding-left:28px;">
+    <div class="about-statement">
       TheUnion is a <span style="color:var(--acid);font-weight:600;">visual movement</span> where art becomes resistance
       and expression turns to <span style="color:var(--acid);font-weight:600;">power</span>.<br><br>
       Unique 1/1 Ordinals reflecting global harmony —
