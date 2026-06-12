@@ -259,6 +259,7 @@ nav {
 .piece-card:hover .p-overlay { opacity:1; }
 .piece-card:hover .p-img img { transform:scale(1.06); }
 .p-img { aspect-ratio:1; overflow:hidden; background:var(--void); position:relative; }
+  .p-img iframe { position:absolute; inset:0; width:100%; height:100%; border:none; pointer-events:none; display:block; }
 .p-img img { width:100%; height:100%; object-fit:cover; transition:transform .4s; display:block; }
 .p-overlay { position:absolute; inset:0; background:rgba(0,0,0,.65); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .2s; }
 .p-overlay span { font-family:'Space Mono',monospace; font-size:10px; letter-spacing:.15em; text-transform:uppercase; color:var(--acid); border:1px solid var(--acid); padding:8px 16px; }
@@ -1032,10 +1033,17 @@ function appendCards(ids) {
     const n  = cardCount;
     const el = document.createElement('div');
     el.className = 'piece-card';
+
+    // Use iframe embed — guaranteed cross-origin from ordinals.com
     el.innerHTML = `
       <div class="p-img">
-        <img src="${ORD}/content/${iid}" alt="UNION #${n}" loading="lazy"
-          onerror="this.style.display='none'">
+        <iframe
+          src="${ORD}/preview/${iid}"
+          loading="lazy"
+          scrolling="no"
+          sandbox="allow-scripts allow-same-origin"
+          style="width:100%;height:100%;border:none;pointer-events:none;display:block;">
+        </iframe>
         <div class="p-overlay"><span>View</span></div>
       </div>
       <div class="p-info">
@@ -1064,8 +1072,9 @@ function clearSkeletons() {
 // ── LIGHTBOX ──────────────────────────────────
 function openLb(iid, n) {
   const prev = document.getElementById('lb-preview');
-  prev.innerHTML = `<img src="${ORD}/content/${iid}" alt="UNION #${n}"
-    onerror="this.outerHTML='<iframe src=\"${ORD}/preview/${iid}\" style=\"width:100%;height:100%;border:none\"></iframe>'">`;
+  prev.innerHTML = `<iframe src="${ORD}/preview/${iid}"
+    style="width:100%;height:100%;border:none;display:block;"
+    sandbox="allow-scripts allow-same-origin"></iframe>`;
   document.getElementById('lb-num').textContent  = `UNION #${n} of ${allIds.length}`;
   document.getElementById('lb-iid').textContent  = iid;
   document.getElementById('lb-link').href        = `${ORD}/inscription/${iid}`;
