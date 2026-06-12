@@ -8,16 +8,25 @@ let cardCount = 0;
 // ── AUDIO ─────────────────────────────────────────
 const audio = document.getElementById('ambient');
 let muted = false;
-audio.volume = 0.22; // very low — ambient
+let audioStarted = false;
+audio.volume = 0.22;
 
 function startAudio() {
-  if (!audio.paused) return;
-  // iOS requires user gesture — resume AudioContext if suspended
+  if (audioStarted) return;
   audio.play().then(() => {
-    console.log('Audio playing');
-  }).catch(e => {
-    console.log('Audio blocked:', e);
-  });
+    audioStarted = true;
+  }).catch(() => {});
+}
+
+function unlockAudio() {
+  // Create a silent buffer to unlock audio on iOS
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const buf = ctx.createBuffer(1, 1, 22050);
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  src.connect(ctx.destination);
+  src.start(0);
+  ctx.resume().then(() => startAudio());
 }
 
 function toggleMute() {
@@ -26,6 +35,8 @@ function toggleMute() {
   const btn = document.getElementById('mute-btn');
   btn.textContent = muted ? '🔇' : '♪';
   btn.classList.toggle('muted', muted);
+  // If user clicks mute btn, also start audio
+  if (!muted) startAudio();
 }
 
 // ── FETCH ALL CHILDREN PAGES ──────────────────────
@@ -304,11 +315,14 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(fetchBtcPrice, 60000);
 
   // Try autoplay immediately
-  setTimeout(() => startAudio(), 800);
-  // Fallback: start on first any interaction
-  ['click','keydown','touchstart','scroll'].forEach(evt =>
-    document.addEventListener(evt, () => startAudio(), { once: true, passive: true })
-  );
+  setTimeout(() => startAudio(), 600);
+  // Mobile unlock: on first touch/click use AudioContext trick
+  const unlockEvents = ['touchstart', 'touchend', 'click', 'keydown'];
+  function onFirstInteraction() {
+    unlockAudio();
+    unlockEvents.forEach(e => document.removeEventListener(e, onFirstInteraction));
+  }
+  unlockEvents.forEach(e => document.addEventListener(e, onFirstInteraction, { passive: true }));
 });
 
 
@@ -357,20 +371,35 @@ function updateFloorDisplay() {
 }
 
 async function fetchBtcPrice() {
-  try {
-    const res  = await fetch('https://api.coinbase.com/v2/prices/BTC-USD/spot');
-    const data = await res.json();
-    btcUsd = parseFloat(data.data?.amount);
-    updatePriceDisplay();
-    updateFloorDisplay();
-  } catch(e) {
+  // Try multiple APIs for best mobile/CORS compatibility
+  const apis = [
+    async () => {
+      const r = await fetch('https://api.coinbase.com/v2/prices/BTC-USD/spot');
+      const d = await r.json(); return parseFloat(d.data?.amount);
+    },
+    async () => {
+      const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
+      const d = await r.json(); return d.bitcoin?.usd;
+    },
+    async () => {
+      const r = await fetch('https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD');
+      const d = await r.json(); return d.USD;
+    },
+    async () => {
+      const r = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT');
+      const d = await r.json(); return parseFloat(d.price);
+    },
+  ];
+  for (const api of apis) {
     try {
-      const r2 = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
-      const d2 = await r2.json();
-      btcUsd = d2.bitcoin?.usd;
-      updatePriceDisplay();
-      updateFloorDisplay();
-    } catch(e2) {}
+      const price = await api();
+      if (price && price > 0) {
+        btcUsd = price;
+        updatePriceDisplay();
+        updateFloorDisplay();
+        return;
+      }
+    } catch(e) { continue; }
   }
 }
 
