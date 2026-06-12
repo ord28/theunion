@@ -511,6 +511,12 @@
     #about-page > div { padding: 60px 20px 60px 60px; }
   }
 
+
+  @media(max-width:768px){
+    nav { justify-content: flex-end; padding: 0 12px; }
+    #wallet-btn { margin-left: auto; }
+  }
+
   @media(max-width:400px){
     .hero { padding: 70px 16px 70px 52px; }
     .hero-title { font-size: clamp(44px, 20vw, 80px); }
