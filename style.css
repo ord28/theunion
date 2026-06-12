@@ -8,7 +8,7 @@
   body{background:var(--black);color:var(--white);font-family:'Space Grotesk',sans-serif;overflow-x:hidden;}
 
   /* NAV */
-  nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:64px;background:transparent;backdrop-filter:none;border-bottom:1px solid transparent;}
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 12px 0 56px;height:64px;background:transparent;backdrop-filter:none;border-bottom:1px solid transparent;}
   .nav-logo{font-family:'Space Mono',monospace;font-size:15px;font-weight:700;letter-spacing:.12em;color:var(--white);text-decoration:none;}
   .nav-logo span{color:var(--acid);}
   .nav-links{display:flex;gap:32px;list-style:none;}
@@ -509,12 +509,6 @@
 
     /* About page */
     #about-page > div { padding: 60px 20px 60px 60px; }
-  }
-
-
-  @media(max-width:768px){
-    nav { justify-content: flex-end; padding: 0 12px; }
-    #wallet-btn { margin-left: auto; }
   }
 
   @media(max-width:400px){
