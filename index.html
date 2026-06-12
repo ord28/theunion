@@ -29,6 +29,8 @@ body {
   font-family: 'Space Grotesk', sans-serif;
   overflow-x: hidden;
   padding-bottom: 44px;
+  width: 100%;
+  max-width: 100vw;
 }
 
 /* ── NAV ────────────────────────────────────── */
@@ -413,6 +415,8 @@ body.light #wallet-btn { background:var(--acid); color:#fff; }
 </head>
 <body>
 
+<audio id="bg-audio" src="./audio/sound.mp3" loop preload="auto"></audio>
+
 <!-- SIDE TAB -->
 <div id="side-tab">
   <div class="hb"><span></span><span></span><span></span></div>
@@ -616,60 +620,43 @@ document.addEventListener('click', e => {
   if (!e.target.closest('#side-tab') && !e.target.closest('#side-drawer')) closeDrawer();
 });
 
-// ── AUDIO — Web Audio API ─────────────────────
-let audioCtx    = null;
-let masterGain  = null;
-let audioOn     = false;
-let muted       = false;
-const VOL       = 0.15;
+// ── AUDIO ─────────────────────────────────────
+const bgAudio = document.getElementById('bg-audio');
+let muted     = false;
+let audioOn   = false;
+bgAudio.volume = 0.22;
 
-function buildAmbient() {
+function startAudio() {
   if (audioOn) return;
-  audioOn = true;
-  try {
-    audioCtx   = new (window.AudioContext || window.webkitAudioContext)();
-    masterGain = audioCtx.createGain();
-    masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
-    masterGain.gain.linearRampToValueAtTime(VOL, audioCtx.currentTime + 3);
-    masterGain.connect(audioCtx.destination);
-    // Soft Cmaj7 pad
-    [[261.63,1],[329.63,0.8],[392.00,0.7],[493.88,0.5]].forEach(([freq, amp], i) => {
-      const osc = audioCtx.createOscillator();
-      const g   = audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-      g.gain.value = amp * 0.04;
-      osc.connect(g); g.connect(masterGain);
-      osc.start(audioCtx.currentTime + i * 0.1);
-      // Warmth layer
-      const osc2 = audioCtx.createOscillator();
-      const g2   = audioCtx.createGain();
-      osc2.type = 'sine';
-      osc2.frequency.value = freq * 1.002;
-      g2.gain.value = amp * 0.02;
-      osc2.connect(g2); g2.connect(masterGain);
-      osc2.start(audioCtx.currentTime + i * 0.1);
-    });
-  } catch(e) {}
+  bgAudio.play().then(() => {
+    audioOn = true;
+  }).catch(() => {});
 }
 
 function toggleMute() {
-  if (!audioOn) { buildAmbient(); return; }
+  if (!audioOn) { startAudio(); return; }
   muted = !muted;
-  if (masterGain) {
-    masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
-    masterGain.gain.linearRampToValueAtTime(muted ? 0 : VOL, audioCtx.currentTime + 0.4);
-  }
+  bgAudio.muted = muted;
   document.getElementById('mute-btn').textContent = muted ? '🔇' : '♪';
 }
 
-// Start audio on first interaction
-function firstInteraction() {
-  buildAmbient();
-  ['touchend','click'].forEach(e => document.removeEventListener(e, firstInteraction));
+// Side tab click also starts audio (user gesture = unlocks iOS)
+sideTab.addEventListener('click', () => {
+  bgAudio.play().catch(() => {});
+});
+
+// Start on first user interaction anywhere
+function firstGesture() {
+  startAudio();
+  ['touchend','click','keydown'].forEach(e =>
+    document.removeEventListener(e, firstGesture)
+  );
 }
-['touchend','click'].forEach(e => document.addEventListener(e, firstInteraction, {passive:true}));
-setTimeout(() => buildAmbient(), 800);
+['touchend','click','keydown'].forEach(e =>
+  document.addEventListener(e, firstGesture, { passive: true })
+);
+// Try immediate autoplay (works on desktop)
+setTimeout(() => startAudio(), 500);
 
 // ── THEME ─────────────────────────────────────
 function toggleTheme() {
@@ -834,6 +821,7 @@ async function connectWallet() {
     document.getElementById('wallet-panel').classList.remove('visible');
     return;
   }
+  btn.classList.remove('connected');
   btn.textContent = 'Connecting...';
   if (window.XverseProviders?.BitcoinProvider) {
     try {
