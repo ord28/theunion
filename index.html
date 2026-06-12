@@ -460,8 +460,8 @@ body.light #wallet-btn { background:var(--acid); color:#fff; }
   nav { padding:0 12px; height:56px; }
   #wallet-btn { margin-left:auto; font-size:10px; padding:8px 14px; }
 
-  /* HERO — centered, no left offset */
-  .hero { padding:70px 16px 70px 16px; min-height:100svh; }
+  /* HERO — pad left to clear side tab */
+  .hero { padding:70px 20px 70px calc(var(--tab-w) + 16px); min-height:100svh; }
   .hero-eyebrow { font-size:10px; letter-spacing:.18em; }
   .hero-title { font-size:clamp(50px,15vw,90px); }
   .hero-sub { font-size:13px; max-width:100%; }
@@ -511,7 +511,7 @@ body.light #wallet-btn { background:var(--acid); color:#fff; }
 </head>
 <body>
 
-<audio id="bg-audio" src="./audio/sound.mp3" loop preload="auto"></audio>
+<!-- Audio via Web Audio API -->
 
 <!-- SIDE TAB -->
 <div id="side-tab">
@@ -760,29 +760,95 @@ document.addEventListener('click', e => {
   if (!e.target.closest('#side-tab') && !e.target.closest('#side-drawer')) closeDrawer();
 });
 
-// ── AUDIO ─────────────────────────────────────
-const bgAudio = document.getElementById('bg-audio');
-bgAudio.volume = 0.22;
-let audioMuted = false;
+// ── AUDIO — Web Audio API (no file needed) ────
+let audioCtx    = null;
+let masterGain  = null;
+let audioMuted  = false;
+let audioOn     = false;
+const VOLUME    = 0.18;
+
+function buildAmbient(ctx) {
+  // Peaceful Cmaj7 pad: C E G B sine waves with slight detuning for warmth
+  const chords = [
+    [130.81, 0.9],  // C3
+    [164.81, 0.7],  // E3
+    [196.00, 0.6],  // G3
+    [246.94, 0.5],  // B3
+    [261.63, 0.4],  // C4
+    [329.63, 0.35], // E4
+  ];
+
+  masterGain = ctx.createGain();
+  masterGain.gain.setValueAtTime(0, ctx.currentTime);
+  masterGain.gain.linearRampToValueAtTime(VOLUME, ctx.currentTime + 4);
+  masterGain.connect(ctx.destination);
+
+  chords.forEach(([freq, amp]) => {
+    // Main tone
+    const osc = ctx.createOscillator();
+    const g   = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    g.gain.value = amp * 0.06;
+    osc.connect(g);
+    g.connect(masterGain);
+    osc.start();
+
+    // Slightly detuned layer for richness
+    const osc2 = ctx.createOscillator();
+    const g2   = ctx.createGain();
+    osc2.type = 'sine';
+    osc2.frequency.value = freq * 1.0015;
+    g2.gain.value = amp * 0.03;
+    osc2.connect(g2);
+    g2.connect(masterGain);
+    osc2.start();
+  });
+}
 
 function startAudio() {
-  bgAudio.play().catch(() => {});
+  if (audioOn) return;
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume().then(() => {
+        buildAmbient(audioCtx);
+        audioOn = true;
+      });
+    } else {
+      buildAmbient(audioCtx);
+      audioOn = true;
+    }
+  } catch(e) {}
 }
 
 function toggleMute() {
+  if (!audioOn) {
+    startAudio();
+    document.getElementById('mute-btn').textContent = '♪';
+    return;
+  }
   audioMuted = !audioMuted;
-  bgAudio.muted = audioMuted;
-  const btn = document.getElementById('mute-btn');
-  if (btn) btn.textContent = audioMuted ? '🔇' : '♪';
-  // Also try to start if not playing
-  if (!audioMuted) startAudio();
+  if (masterGain) {
+    masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+    masterGain.gain.linearRampToValueAtTime(
+      audioMuted ? 0 : VOLUME,
+      audioCtx.currentTime + 0.5
+    );
+  }
+  document.getElementById('mute-btn').textContent = audioMuted ? '🔇' : '♪';
 }
 
-// Wire side tab to start audio on click (iOS user gesture)
+// Start on side tab click (direct user gesture — works on iOS)
 sideTab.addEventListener('click', startAudio);
 
-// Desktop: try autoplay after short delay
-setTimeout(startAudio, 600);
+// Start on first interaction anywhere
+document.addEventListener('click',      startAudio, { once: true, passive: true });
+document.addEventListener('touchend',   startAudio, { once: true, passive: true });
+document.addEventListener('keydown',    startAudio, { once: true, passive: true });
+
+// Desktop autoplay attempt
+setTimeout(startAudio, 800);
 
 // ── THEME ─────────────────────────────────────
 function toggleTheme() {
