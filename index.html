@@ -760,72 +760,55 @@ document.addEventListener('click', e => {
   if (!e.target.closest('#side-tab') && !e.target.closest('#side-drawer')) closeDrawer();
 });
 
-// ── AUDIO — Web Audio API (no file needed) ────
-let audioCtx    = null;
-let masterGain  = null;
-let audioMuted  = false;
-let audioOn     = false;
-const VOLUME    = 0.18;
+// ── AUDIO — Web Audio API ─────────────────────
+let audioCtx   = null;
+let masterGain = null;
+let audioMuted = false;
+let audioOn    = false;
+const VOLUME   = 0.18;
 
-function buildAmbient(ctx) {
-  // Peaceful Cmaj7 pad: C E G B sine waves with slight detuning for warmth
-  const chords = [
-    [130.81, 0.9],  // C3
-    [164.81, 0.7],  // E3
-    [196.00, 0.6],  // G3
-    [246.94, 0.5],  // B3
-    [261.63, 0.4],  // C4
-    [329.63, 0.35], // E4
-  ];
-
-  masterGain = ctx.createGain();
-  masterGain.gain.setValueAtTime(0, ctx.currentTime);
-  masterGain.gain.linearRampToValueAtTime(VOLUME, ctx.currentTime + 4);
-  masterGain.connect(ctx.destination);
-
-  chords.forEach(([freq, amp]) => {
-    // Main tone
-    const osc = ctx.createOscillator();
-    const g   = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.value = freq;
-    g.gain.value = amp * 0.06;
-    osc.connect(g);
-    g.connect(masterGain);
-    osc.start();
-
-    // Slightly detuned layer for richness
-    const osc2 = ctx.createOscillator();
-    const g2   = ctx.createGain();
-    osc2.type = 'sine';
-    osc2.frequency.value = freq * 1.0015;
-    g2.gain.value = amp * 0.03;
-    osc2.connect(g2);
-    g2.connect(masterGain);
-    osc2.start();
-  });
-}
-
-function startAudio() {
+function buildAmbient() {
   if (audioOn) return;
   try {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') {
-      audioCtx.resume().then(() => {
-        buildAmbient(audioCtx);
-        audioOn = true;
+    const resume = () => {
+      // Peaceful Cmaj7 pad — C E G B sine waves
+      const notes = [
+        [130.81, 0.9], [164.81, 0.7], [196.00, 0.6],
+        [246.94, 0.5], [261.63, 0.4], [329.63, 0.35],
+      ];
+      masterGain = audioCtx.createGain();
+      masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
+      masterGain.gain.linearRampToValueAtTime(VOLUME, audioCtx.currentTime + 4);
+      masterGain.connect(audioCtx.destination);
+      notes.forEach(([freq, amp]) => {
+        [1, 1.0015].forEach((detune, i) => {
+          const o = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          o.type = 'sine';
+          o.frequency.value = freq * detune;
+          g.gain.value = amp * (i === 0 ? 0.06 : 0.03);
+          o.connect(g); g.connect(masterGain);
+          o.start();
+        });
       });
-    } else {
-      buildAmbient(audioCtx);
       audioOn = true;
+      // Update button to show music is playing
+      const btn = document.getElementById('mute-btn');
+      if (btn) btn.textContent = '♪';
+    };
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume().then(resume);
+    } else {
+      resume();
     }
   } catch(e) {}
 }
 
 function toggleMute() {
   if (!audioOn) {
-    startAudio();
-    document.getElementById('mute-btn').textContent = '♪';
+    // First time: start the music
+    buildAmbient();
     return;
   }
   audioMuted = !audioMuted;
@@ -833,22 +816,27 @@ function toggleMute() {
     masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
     masterGain.gain.linearRampToValueAtTime(
       audioMuted ? 0 : VOLUME,
-      audioCtx.currentTime + 0.5
+      audioCtx.currentTime + 0.4
     );
   }
-  document.getElementById('mute-btn').textContent = audioMuted ? '🔇' : '♪';
+  const btn = document.getElementById('mute-btn');
+  if (btn) btn.textContent = audioMuted ? '🔇' : '♪';
 }
 
-// Start on side tab click (direct user gesture — works on iOS)
-sideTab.addEventListener('click', startAudio);
+// iOS: start on first TOUCHEND (not click — avoids conflict with onclick)
+document.addEventListener('touchend', function startOnTouch() {
+  buildAmbient();
+  document.removeEventListener('touchend', startOnTouch);
+}, { passive: true });
 
-// Start on first interaction anywhere
-document.addEventListener('click',      startAudio, { once: true, passive: true });
-document.addEventListener('touchend',   startAudio, { once: true, passive: true });
-document.addEventListener('keydown',    startAudio, { once: true, passive: true });
+// Desktop: start on first keydown (neutral gesture, no button conflict)
+document.addEventListener('keydown', function startOnKey() {
+  buildAmbient();
+  document.removeEventListener('keydown', startOnKey);
+}, { once: true });
 
-// Desktop autoplay attempt
-setTimeout(startAudio, 800);
+// Side tab hover/click also starts
+sideTab.addEventListener('click', buildAmbient);
 
 // ── THEME ─────────────────────────────────────
 function toggleTheme() {
