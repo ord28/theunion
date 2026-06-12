@@ -370,6 +370,67 @@ footer { padding:36px 32px 36px calc(var(--tab-w) + 28px); display:flex; align-i
 }
 .toast.show { transform:translateY(0); opacity:1; }
 
+
+/* ── WALLET MODAL ───────────────────────────── */
+.wallet-modal-overlay {
+  display:none; position:fixed; inset:0; z-index:500;
+  background:rgba(0,0,0,0.85); backdrop-filter:blur(8px);
+  align-items:center; justify-content:center; padding:20px;
+}
+.wallet-modal-overlay.open { display:flex; }
+.wallet-modal {
+  background:var(--panel); border:1px solid var(--border);
+  max-width:380px; width:100%; position:relative;
+}
+.wallet-modal::before {
+  content:''; position:absolute; top:0; left:0; right:0;
+  height:2px; background:var(--acid);
+}
+.wallet-modal-header {
+  padding:20px 20px 16px;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.wallet-modal-title {
+  font-family:'Space Mono',monospace; font-size:12px;
+  letter-spacing:.15em; text-transform:uppercase; color:var(--white);
+}
+.wallet-modal-close {
+  background:transparent; border:none; color:var(--mid);
+  font-size:18px; cursor:pointer; line-height:1; padding:2px 6px;
+  transition:color .2s;
+}
+.wallet-modal-close:hover { color:var(--white); }
+.wallet-modal-body { padding:12px; display:flex; flex-direction:column; gap:8px; }
+.wallet-option {
+  display:flex; align-items:center; gap:14px;
+  padding:16px 18px;
+  background:var(--void); border:1px solid var(--border);
+  cursor:pointer; transition:all .2s; width:100%;
+  text-align:left;
+  -webkit-tap-highlight-color:transparent;
+}
+.wallet-option:hover { border-color:var(--acid); background:rgba(200,255,0,0.04); }
+.wallet-option-icon {
+  width:36px; height:36px; border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; flex-shrink:0;
+}
+.wallet-option-info { flex:1; }
+.wallet-option-name {
+  font-family:'Space Mono',monospace; font-size:12px;
+  font-weight:700; color:var(--white); display:block; margin-bottom:3px;
+}
+.wallet-option-desc { font-size:10px; color:var(--dim); letter-spacing:.04em; }
+.wallet-option-arrow { color:var(--dim); font-size:14px; }
+.wallet-option:hover .wallet-option-arrow { color:var(--acid); }
+.wallet-modal-footer {
+  padding:12px 20px 16px;
+  border-top:1px solid var(--border);
+  font-size:10px; color:var(--dim); text-align:center; line-height:1.6;
+}
+.wallet-modal-footer a { color:var(--mid); text-decoration:none; }
+.wallet-modal-footer a:hover { color:var(--acid); }
 /* ── LIGHT MODE ─────────────────────────────── */
 body.light {
   --bg: #f0f0eb; --void:#e8e8e3; --panel:#fff; --border:#ccc;
@@ -578,6 +639,47 @@ body.light #wallet-btn { background:var(--acid); color:#fff; }
   </div>
 </div>
 
+
+<!-- WALLET MODAL -->
+<div class="wallet-modal-overlay" id="wallet-modal-overlay" onclick="if(event.target===this)closeWalletModal()">
+  <div class="wallet-modal">
+    <div class="wallet-modal-header">
+      <span class="wallet-modal-title">Connect Wallet</span>
+      <button class="wallet-modal-close" onclick="closeWalletModal()">✕</button>
+    </div>
+    <div class="wallet-modal-body">
+
+      <button class="wallet-option" onclick="connectSpecific('xverse')">
+        <div class="wallet-option-icon" style="background:#1a1a2e;">
+          <img src="https://www.xverse.app/favicon.ico" width="24" height="24" onerror="this.outerHTML='₿'" style="border-radius:4px">
+        </div>
+        <div class="wallet-option-info">
+          <span class="wallet-option-name">Xverse</span>
+          <span class="wallet-option-desc">Bitcoin & Ordinals wallet</span>
+        </div>
+        <span class="wallet-option-arrow">→</span>
+      </button>
+
+      <button class="wallet-option" onclick="connectSpecific('unisat')">
+        <div class="wallet-option-icon" style="background:#1a1a1a;">
+          <img src="https://unisat.io/favicon.ico" width="24" height="24" onerror="this.outerHTML='🟡'" style="border-radius:4px">
+        </div>
+        <div class="wallet-option-info">
+          <span class="wallet-option-name">Unisat</span>
+          <span class="wallet-option-desc">Bitcoin Ordinals wallet</span>
+        </div>
+        <span class="wallet-option-arrow">→</span>
+      </button>
+
+    </div>
+    <div class="wallet-modal-footer">
+      New to Bitcoin wallets?
+      <a href="https://www.xverse.app" target="_blank">Get Xverse</a> &nbsp;·&nbsp;
+      <a href="https://unisat.io" target="_blank">Get Unisat</a>
+    </div>
+  </div>
+</div>
+
 <!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox">
   <div class="lb-inner">
@@ -661,26 +763,19 @@ document.addEventListener('click', e => {
 // ── AUDIO ─────────────────────────────────────
 const bgAudio = document.getElementById('bg-audio');
 bgAudio.volume = 0.22;
-let audioStarted = false;
-let audioMuted   = false;
+let audioMuted = false;
 
 function startAudio() {
-  if (audioStarted) return;
-  bgAudio.play().then(() => {
-    audioStarted = true;
-    document.getElementById('mute-btn').textContent = '♪';
-  }).catch(() => {});
+  bgAudio.play().catch(() => {});
 }
 
 function toggleMute() {
-  // If audio hasn't started yet, start it
-  if (!audioStarted) {
-    startAudio();
-    return;
-  }
   audioMuted = !audioMuted;
   bgAudio.muted = audioMuted;
-  document.getElementById('mute-btn').textContent = audioMuted ? '🔇' : '♪';
+  const btn = document.getElementById('mute-btn');
+  if (btn) btn.textContent = audioMuted ? '🔇' : '♪';
+  // Also try to start if not playing
+  if (!audioMuted) startAudio();
 }
 
 // Wire side tab to start audio on click (iOS user gesture)
@@ -889,13 +984,14 @@ function closeLb() {
   document.getElementById('lb-preview').innerHTML = '';
   document.body.style.overflow = '';
 }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeLb(); closeWalletModal(); } });
 
 // ── WALLET ────────────────────────────────────
 let connectedAddr = null;
 
-async function connectWallet() {
+function connectWallet() {
   const btn = document.getElementById('wallet-btn');
+  // If already connected — disconnect
   if (connectedAddr) {
     connectedAddr = null;
     btn.textContent = 'Connect Wallet';
@@ -903,31 +999,49 @@ async function connectWallet() {
     document.getElementById('wallet-panel').classList.remove('visible');
     return;
   }
-  btn.classList.remove('connected');
+  // Show wallet picker modal
+  openWalletModal();
+}
+
+function openWalletModal() {
+  document.getElementById('wallet-modal-overlay').classList.add('open');
+}
+
+function closeWalletModal() {
+  document.getElementById('wallet-modal-overlay').classList.remove('open');
+}
+
+async function connectSpecific(walletType) {
+  closeWalletModal();
+  const btn = document.getElementById('wallet-btn');
   btn.textContent = 'Connecting...';
-  if (window.XverseProviders?.BitcoinProvider) {
-    try {
-      const r = await window.XverseProviders.BitcoinProvider.request('getAccounts', {purposes:['ordinals']});
-      if (r?.result?.length) { onConnect(r.result[0].address,'Xverse'); return; }
-    } catch(e) {}
-  }
-  if (window.unisat) {
-    try {
-      const a = await window.unisat.requestAccounts();
-      if (a?.length) { onConnect(a[0],'Unisat'); return; }
-    } catch(e) {}
-  }
-  if (window.magicEden?.bitcoin) {
-    try {
-      const r = await window.magicEden.bitcoin.connect();
-      if (r?.addresses?.length) {
-        const addr = r.addresses.find(x=>x.purpose==='ordinals')?.address||r.addresses[0].address;
-        onConnect(addr,'Magic Eden'); return;
+
+  try {
+    if (walletType === 'xverse') {
+      if (!window.XverseProviders?.BitcoinProvider) {
+        showToast('Xverse not found. Install it first.');
+        window.open('https://www.xverse.app', '_blank');
+        btn.textContent = 'Connect Wallet'; return;
       }
-    } catch(e) {}
+      const r = await window.XverseProviders.BitcoinProvider.request('getAccounts', {purposes:['ordinals']});
+      if (r?.result?.length) { onConnect(r.result[0].address, 'Xverse'); return; }
+    }
+
+    if (walletType === 'unisat') {
+      if (!window.unisat) {
+        showToast('Unisat not found. Install it first.');
+        window.open('https://unisat.io', '_blank');
+        btn.textContent = 'Connect Wallet'; return;
+      }
+      const a = await window.unisat.requestAccounts();
+      if (a?.length) { onConnect(a[0], 'Unisat'); return; }
+    }
+
+  } catch(e) {
+    showToast('Connection failed. Try again.');
   }
+
   btn.textContent = 'Connect Wallet';
-  showToast('No Bitcoin wallet found. Install Xverse or Unisat.');
 }
 
 function onConnect(address, wallet) {
