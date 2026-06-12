@@ -461,12 +461,60 @@
   body { padding-bottom: 40px; }
 
   @media(max-width:768px){
-    nav{padding:0 16px;}
-    .nav-links{display:none;}
-    .hero{padding:90px 20px 60px;}
-    .gallery-section{padding:60px 16px;}
-    .lb-inner{grid-template-columns:1fr;}
-    footer{flex-direction:column;text-align:center;}
-    .section-header{flex-direction:column;align-items:flex-start;}
-    .stats-row{gap:28px;}
+    nav { padding: 0 12px; }
+    .nav-links { display: none; }
+
+    /* Hero — clear the 44px side tab, center content */
+    .hero {
+      padding: 80px 24px 80px 60px;
+      min-height: 100svh;
+    }
+    .hero-title { font-size: clamp(52px, 18vw, 100px); }
+    .hero-eyebrow { font-size: 10px; letter-spacing: .18em; }
+    .hero-sub { font-size: 13px; max-width: 100%; }
+
+    /* Stats row — tighter on mobile */
+    .stats-row { gap: 20px; }
+    .stat-val { font-size: 22px; }
+    .stat-lbl { font-size: 9px; }
+
+    /* CTA buttons — stack on very small screens */
+    .cta-row { flex-direction: column; align-items: center; gap: 12px; }
+    .btn-primary, .btn-ghost { width: 100%; max-width: 280px; justify-content: center; }
+
+    /* Wallet panel */
+    .wallet-panel { padding: 16px 20px; }
+
+    /* Gallery */
+    .gallery-section { padding: 60px 16px 60px 60px; }
+    .pieces-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+    .section-header { flex-direction: column; align-items: flex-start; }
+    .gallery-page-header { padding: 24px 16px 16px 60px; }
+
+    /* Lightbox — full width single column */
+    .lb-inner { grid-template-columns: 1fr; max-height: 95vh; }
+
+    /* Footer */
+    footer { flex-direction: column; text-align: center; padding: 32px 20px 32px 60px; }
+    .footer-links { flex-wrap: wrap; justify-content: center; gap: 16px; }
+
+    /* Bottom bar */
+    .bottom-bar { padding: 0 12px; }
+    .bb-price { font-size: 9px; }
+
+    /* Side tab — keep it narrow on mobile */
+    #side-tab { width: 36px; }
+    #side-content { left: 36px; transform: translateX(-236px); }
+    #side-content.open { transform: translateX(0); }
+
+    /* About page */
+    #about-page > div { padding: 60px 20px 60px 60px; }
+  }
+
+  @media(max-width:400px){
+    .hero { padding: 70px 16px 70px 52px; }
+    .hero-title { font-size: clamp(44px, 20vw, 80px); }
+    .stats-row { gap: 14px; }
+    .stat-val { font-size: 20px; }
+    .gallery-section { padding: 40px 12px 40px 52px; }
   }
