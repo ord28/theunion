@@ -323,6 +323,63 @@
 
 
 
+
+  /* ═══ ABOUT PAGE ════════════════════════════════ */
+  .about-inner {
+    max-width: 860px; margin: 0 auto;
+    padding: 60px 32px 80px 72px;
+  }
+  .about-back {
+    margin-bottom: 48px; display: inline-flex;
+  }
+  .about-eyebrow {
+    font-family: 'Space Mono', monospace; font-size: 11px;
+    letter-spacing: .2em; text-transform: uppercase;
+    color: var(--acid); margin-bottom: 16px; margin-top: 32px;
+  }
+  .about-title {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(40px, 10vw, 80px);
+    font-weight: 700; line-height: .95;
+    color: var(--white); margin-bottom: 40px;
+  }
+  .about-title-outline {
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--white);
+    display: block;
+  }
+  .about-statement {
+    font-size: clamp(15px, 2.5vw, 20px);
+    line-height: 1.8; color: #ccc;
+    margin-bottom: 56px;
+    border-left: 2px solid var(--acid);
+    padding-left: 24px;
+  }
+
+  @media(max-width: 768px) {
+    .about-inner {
+      padding: 48px 20px 80px 60px;
+    }
+    .about-title { font-size: clamp(36px, 12vw, 64px); margin-bottom: 28px; }
+    .about-statement { font-size: 14px; padding-left: 16px; margin-bottom: 40px; }
+    .about-back { margin-bottom: 32px; }
+
+    /* About stats grid — 2 cols on mobile */
+    #about-page .lb-traits,
+    #about-page [style*="grid-template-columns:repeat(auto-fill"] {
+      grid-template-columns: 1fr 1fr !important;
+      gap: 2px !important;
+    }
+
+    /* About links — full width */
+    #about-page a[style*="display:flex"] {
+      padding: 14px 16px !important;
+    }
+    #about-page a[style*="display:flex"] span:last-child {
+      display: none !important;
+    }
+  }
+  /* ════════════════════════════════════════════════ */
   /* ═══ SIDE PANEL ════════════════════════════════ */
   /* Tab — always fixed, never moves */
   #side-tab {
