@@ -371,6 +371,28 @@ footer { padding:36px 32px 36px calc(var(--tab-w) + 28px); display:flex; align-i
 .toast.show { transform:translateY(0); opacity:1; }
 
 
+
+  /* DISCONNECT BUTTON */
+  .disconnect-btn {
+    margin-top: 14px;
+    width: 100%;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    background: transparent;
+    color: var(--dim);
+    border: 1px solid var(--border);
+    padding: 9px;
+    cursor: pointer;
+    transition: all .2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .disconnect-btn:hover {
+    color: #ef4444;
+    border-color: #ef4444;
+    background: rgba(239,68,68,0.06);
+  }
 /* ── WALLET MODAL ───────────────────────────── */
 .wallet-modal-overlay {
   display:none; position:fixed; inset:0; z-index:500;
@@ -572,6 +594,7 @@ body.light #wallet-btn { background:var(--acid); color:#fff; }
         </div>
         <span class="holder-badge badge-no" id="holder-badge">—</span>
       </div>
+      <button class="disconnect-btn" onclick="disconnectWallet()">Disconnect</button>
     </div>
     <div class="scroll-hint"><div class="scroll-line"></div></div>
   </section>
@@ -1043,17 +1066,21 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeLb();
 // ── WALLET ────────────────────────────────────
 let connectedAddr = null;
 
-function connectWallet() {
+function disconnectWallet() {
+  connectedAddr = null;
   const btn = document.getElementById('wallet-btn');
-  // If already connected — disconnect
-  if (connectedAddr) {
-    connectedAddr = null;
-    btn.textContent = 'Connect Wallet';
-    btn.classList.remove('connected');
-    document.getElementById('wallet-panel').classList.remove('visible');
-    return;
-  }
-  // Show wallet picker modal
+  btn.textContent = 'Connect Wallet';
+  btn.classList.remove('connected');
+  document.getElementById('wallet-panel').classList.remove('visible');
+  document.getElementById('holdings-count').textContent = '0';
+  document.getElementById('holdings-sub').textContent = 'No pieces detected';
+  document.getElementById('holder-badge').textContent = '—';
+  document.getElementById('holder-badge').className = 'holder-badge badge-no';
+  document.getElementById('wallet-addr').textContent = '—';
+}
+
+function connectWallet() {
+  if (connectedAddr) { disconnectWallet(); return; }
   openWalletModal();
 }
 
