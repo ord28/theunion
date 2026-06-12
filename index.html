@@ -9,10 +9,10 @@
 <body>
 
 <!-- AMBIENT PEACE AUDIO — autoplay low volume -->
-<audio id="ambient" loop preload="auto">
-  <!-- "Gymnopédie No.1" by Erik Satie — public domain, sourced from IMSLP/Musopen -->
-  <source src="https://upload.wikimedia.org/wikipedia/commons/e/e9/Gymnopedie_No._1.ogg" type="audio/ogg">
-  <source src="https://upload.wikimedia.org/wikipedia/commons/e/e9/Gymnopedie_No._1.ogg" type="audio/ogg">
+<audio id="ambient" loop preload="auto" crossorigin="anonymous">
+  <!-- Gymnopédie No.1 — Erik Satie, public domain -->
+  <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_d0ef7c5c8f.mp3" type="audio/mpeg">
+  <source src="https://cdn.pixabay.com/audio/2023/01/20/audio_1a609c3b74.mp3" type="audio/mpeg">
 </audio>
 
 
@@ -51,7 +51,7 @@
 <nav>
   
   <ul class="nav-links"></ul>
-  <div class="nav-right">
+  <div class="nav-right" style="margin-left:auto;">
     <button id="wallet-btn" onclick="connectWallet()">Connect Wallet</button>
   </div>
 </nav>
