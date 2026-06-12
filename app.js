@@ -5,38 +5,73 @@ let allIds = [];
 let seenIds = new Set();
 let cardCount = 0;
 
-// ── AUDIO ─────────────────────────────────────────
-const audio = document.getElementById('ambient');
+// ── AUDIO — Web Audio API ambient tone (works on all mobile) ─────
+let audioCtx = null;
+let gainNode = null;
+let audioUnlocked = false;
 let muted = false;
-let audioStarted = false;
-audio.volume = 0.22;
+const TARGET_VOLUME = 0.12;
 
-function startAudio() {
-  if (audioStarted) return;
-  audio.play().then(() => {
-    audioStarted = true;
-  }).catch(() => {});
+// Generates a soft, looping ambient pad using oscillators
+function buildAmbientSound(ctx) {
+  // Gymnopedie-inspired peaceful chords: soft sine waves
+  const notes = [261.63, 329.63, 392.00, 493.88]; // C4 E4 G4 B4 — Cmaj7
+  const master = ctx.createGain();
+  master.gain.setValueAtTime(0, ctx.currentTime);
+  master.gain.linearRampToValueAtTime(TARGET_VOLUME, ctx.currentTime + 3);
+  master.connect(ctx.destination);
+  gainNode = master;
+
+  notes.forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const g   = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    // Gentle volume swell per note
+    g.gain.value = 0.18 / notes.length;
+    osc.connect(g);
+    g.connect(master);
+    osc.start(ctx.currentTime + i * 0.12);
+
+    // Add a slightly detuned layer for warmth
+    const osc2 = ctx.createOscillator();
+    const g2   = ctx.createGain();
+    osc2.type = 'sine';
+    osc2.frequency.value = freq * 1.003; // slight detune
+    g2.gain.value = 0.08 / notes.length;
+    osc2.connect(g2);
+    g2.connect(master);
+    osc2.start(ctx.currentTime + i * 0.12);
+  });
 }
 
-function unlockAudio() {
-  // Create a silent buffer to unlock audio on iOS
-  const ctx = new (window.AudioContext || window.webkitAudioContext)();
-  const buf = ctx.createBuffer(1, 1, 22050);
-  const src = ctx.createBufferSource();
-  src.buffer = buf;
-  src.connect(ctx.destination);
-  src.start(0);
-  ctx.resume().then(() => startAudio());
+function unlockAndPlay() {
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    audioCtx.resume().then(() => buildAmbientSound(audioCtx));
+  } catch(e) {}
 }
 
 function toggleMute() {
+  if (!audioUnlocked) {
+    unlockAndPlay();
+    return;
+  }
   muted = !muted;
-  audio.muted = muted;
+  if (gainNode) {
+    gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(
+      muted ? 0 : TARGET_VOLUME,
+      audioCtx.currentTime + 0.5
+    );
+  }
   const btn = document.getElementById('mute-btn');
-  btn.textContent = muted ? '🔇' : '♪';
-  btn.classList.toggle('muted', muted);
-  // If user clicks mute btn, also start audio
-  if (!muted) startAudio();
+  if (btn) {
+    btn.textContent = muted ? '🔇' : '♪';
+    btn.classList.toggle('muted', muted);
+  }
 }
 
 // ── FETCH ALL CHILDREN PAGES ──────────────────────
@@ -314,16 +349,19 @@ document.addEventListener('DOMContentLoaded', () => {
   fetchBtcPrice();
   setInterval(fetchBtcPrice, 60000);
 
-  // Try autoplay immediately
-  setTimeout(() => startAudio(), 600);
-  // Mobile unlock: on first touch/click use AudioContext trick
-  const unlockEvents = ['touchstart', 'touchend', 'click', 'keydown'];
-  function onFirstInteraction() {
-    unlockAudio();
-    unlockEvents.forEach(e => document.removeEventListener(e, onFirstInteraction));
+  // Try autoplay on desktop
+  setTimeout(() => unlockAndPlay(), 400);
+
+  // Mobile: fire on first any interaction (iOS requires gesture)
+  function firstGesture() {
+    unlockAndPlay();
+    ['touchend','click','keydown'].forEach(e =>
+      document.removeEventListener(e, firstGesture)
+    );
   }
-  unlockEvents.forEach(e => document.addEventListener(e, onFirstInteraction, { passive: true }));
-});
+  ['touchend','click','keydown'].forEach(e =>
+    document.addEventListener(e, firstGesture, { passive: true })
+  );
 
 
 
@@ -341,14 +379,17 @@ const FLOOR_BTC = 0.002; // TheUnion floor in BTC
 
 function toggleCurrency() {
   currencyMode = currencyMode === 'crypto' ? 'usd' : 'crypto';
-  document.getElementById('cur-crypto').classList.toggle('active', currencyMode === 'crypto');
-  document.getElementById('cur-usd').classList.toggle('active', currencyMode === 'usd');
+  const cc = document.getElementById('cur-crypto');
+  const cu = document.getElementById('cur-usd');
+  if (cc) cc.classList.toggle('active', currencyMode === 'crypto');
+  if (cu) cu.classList.toggle('active', currencyMode === 'usd');
   updatePriceDisplay();
   updateFloorDisplay();
 }
 
 function updatePriceDisplay() {
   const el = document.getElementById('btc-price-display');
+  if (!el) return;
   if (!btcUsd) { el.textContent = 'BTC —'; return; }
   if (currencyMode === 'usd') {
     el.textContent = 'BTC $' + btcUsd.toLocaleString('en-US', { maximumFractionDigits: 0 });
