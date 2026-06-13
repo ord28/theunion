@@ -45,12 +45,12 @@ nav {
   margin-left: auto;
   font-family: 'Space Mono', monospace; font-size:11px;
   letter-spacing:.1em; text-transform:uppercase;
-  background: var(--acid); color:#000;
+  background: var(--panel); color:var(--orange);
   border:none; padding:10px 18px; cursor:pointer; font-weight:700;
   clip-path: polygon(0 0,calc(100% - 7px) 0,100% 7px,100% 100%,7px 100%,0 calc(100% - 7px));
   transition: background .2s;
 }
-#wallet-btn:hover { background:#d4ff1a; }
+#wallet-btn:hover { background:rgba(255,107,26,.18); }
 #wallet-btn.connected { background:var(--teal); }
 
 /* ── SIDE TAB — always visible ──────────────── */
@@ -262,7 +262,7 @@ nav {
   .p-img iframe { position:absolute; inset:0; width:100%; height:100%; border:none display:block; }
 .p-img img { width:100%; height:100%; object-fit:cover; transition:transform .4s; display:block; }
 .p-overlay { position:absolute; inset:0; background:rgba(255,107,26,.18); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .25s; }
-.p-overlay-label { font-family:'Space Mono',monospace; font-size:11px; letter-spacing:.15em; text-transform:uppercase; color:#fff; background:var(--orange); border:none; padding:9px 20px; box-shadow:0 0 16px rgba(255,107,26,.7); border-radius:2px; white-space:nowrap; }
+.p-overlay-label { font-family:'Space Mono',monospace; font-size:11px; letter-spacing:.15em; text-transform:uppercase; color:var(--orange); background:transparent; border:1.5px solid var(--orange); padding:9px 20px; box-shadow:0 0 12px rgba(255,107,26,.5); border-radius:2px; white-space:nowrap; }
 .p-info { padding:10px 12px; border-top:1px solid var(--border); }
 .p-num { font-family:'Space Mono',monospace; font-size:10px; color:var(--acid); margin-bottom:3px; }
 .p-id  { font-size:10px; color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-family:'Space Mono',monospace; }
@@ -473,7 +473,7 @@ body.light #side-tab { background:rgba(220,220,215,.92); border-right-color:rgba
 body.light #side-drawer { background:rgba(230,230,225,.95); }
 body.light .bottom-bar { background:linear-gradient(to top,rgba(240,240,235,.9) 0%,rgba(240,240,235,0) 100%); }
 body.light footer { border-top-color:transparent; background:transparent; }
-body.light #wallet-btn { background:var(--acid); color:#fff; }
+body.light #wallet-btn { background:var(--orange); color:#fff; }
 
 /* ── MOBILE ─────────────────────────────────── */
 @media(max-width:768px) {
@@ -642,7 +642,7 @@ body.light #wallet-btn { background:var(--acid); color:#fff; }
     </div>
     <div class="about-stats">
       <div class="about-stat-box"><div class="about-stat-val" style="color:var(--acid)">100</div><div class="about-stat-lbl">Unique 1/1s</div></div>
-      <div class="about-stat-box"><div class="about-stat-val">BTC</div><div class="about-stat-lbl">Bitcoin Ordinals</div></div>
+      <div class="about-stat-box"><div class="about-stat-val" style="color:var(--orange);">BTC</div><div class="about-stat-lbl" style="color:var(--orange);">Bitcoin Ordinals</div></div>
       <div class="about-stat-box"><div class="about-stat-val">52</div><div class="about-stat-lbl">Holders</div></div>
       <div class="about-stat-box"><div class="about-stat-val">1/1</div><div class="about-stat-lbl">Hand-drawn</div></div>
     </div>
