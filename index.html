@@ -579,7 +579,7 @@ body.light #wallet-btn { background:rgba(255,255,255,.47); color:var(--orange); 
       <div class="stat"><span class="stat-val hi">100</span><span class="stat-lbl">Supply</span></div>
       <div class="stat"><span class="stat-val" id="stat-floor">0.002</span><span class="stat-lbl">Floor</span></div>
       <div class="stat"><span class="stat-val">52</span><span class="stat-lbl">Holders</span></div>
-      <div class="stat"><span class="stat-val" id="stat-loaded">—</span><span class="stat-lbl">Loaded</span></div>
+      <div class="stat"><span class="stat-val" id="stat-loaded">100</span><span class="stat-lbl">Loaded</span></div>
     </div>
     <div class="cta-row">
       <button class="btn-primary" onclick="showPage('gallery')">View Gallery</button>
@@ -908,14 +908,6 @@ function updateGalleryStatus(done = false) {
   if (el) el.textContent = allIds.length;
 }
 
-async function prefetchCount() {
-  try {
-    const res  = await fetch(`${ORD}/r/children/${PARENT}`);
-    const data = await res.json();
-    const el   = document.getElementById('stat-loaded');
-    if (el && data.ids) el.textContent = data.ids.length + (data.more ? '+' : '');
-  } catch(e) {}
-}
 
 function appendCards(ids) {
   const grid = document.getElementById('main-grid');
