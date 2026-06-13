@@ -261,7 +261,7 @@ nav {
 .p-img { aspect-ratio:1; overflow:hidden; background:var(--void); position:relative; }
   .p-img iframe { position:absolute; inset:0; width:100%; height:100%; border:none display:block; }
 .p-img img { width:100%; height:100%; object-fit:cover; transition:transform .4s; display:block; }
-.p-overlay { position:absolute; inset:0; background:rgba(255,107,26,.18); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .25s; }
+.p-overlay { position:absolute; inset:0; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .25s; }
 .p-overlay-label { font-family:'Space Mono',monospace; font-size:11px; letter-spacing:.15em; text-transform:uppercase; color:var(--acid); background:transparent; border:1.5px solid var(--acid); padding:9px 20px; box-shadow:0 0 12px rgba(200,255,0,.4); border-radius:2px; white-space:nowrap; }
 .p-info { padding:10px 12px; border-top:1px solid var(--border); }
 .p-num { font-family:'Space Mono',monospace; font-size:10px; color:var(--acid); margin-bottom:3px; }
@@ -615,7 +615,7 @@ body.light #wallet-btn { background:var(--orange); color:#fff; }
 <div id="page-gallery" style="display:none;">
   <div class="gallery-page-header">
     <div>
-      <div class="section-eyebrow">Bitcoin Ordinals · 100 Inscriptions</div>
+      <div class="section-eyebrow" style="color:var(--orange);">Bitcoin Ordinals · 100 Inscriptions</div>
       <h2 class="section-h">The Collection</h2>
     </div>
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
