@@ -748,23 +748,6 @@ const FLOOR_BTC = 0.002;
 let currentPage = 'home';
 let galleryLoaded = false;
 
-function showPage(name) {
-  document.getElementById('page-home').style.display    = name === 'home'    ? '' : 'none';
-  document.getElementById('page-gallery').style.display = name === 'gallery' ? '' : 'none';
-  document.getElementById('page-about').style.display   = name === 'about'   ? '' : 'none';
-  currentPage = name;
-  window.scrollTo(0, 0);
-  if (name === 'gallery' && !galleryLoaded) {
-    galleryLoaded = true;
-    showSkeletons(20);
-    fetchAllChildren();
-  }
-  // Pre-fetch collection count for home page stat even if gallery not visited
-  if (!galleryLoaded && name === 'home') {
-    prefetchCount();
-  }
-}
-
 // ── SIDE DRAWER ───────────────────────────────
 const sideTab    = document.getElementById('side-tab');
 const sideDrawer = document.getElementById('side-drawer');
@@ -939,85 +922,71 @@ fetchBTC();
 setInterval(fetchBTC, 60000);
 
 
-// ── GALLERY — fetch via Hiro API (CORS-safe) ──
-let allIds    = [];
-let seenIds   = new Set();
+// ── GALLERY ───────────────────────────────────────
+let allIds   = [];
+let seenIds  = new Set();
 let cardCount = 0;
 
-async function fetchAllChildren() {
-  const HIRO   = 'https://api.hiro.so/ordinals/v1/inscriptions';
-  let offset   = 0;
-  const limit  = 60;
-  let total    = null;
+function showPage(name) {
+  document.getElementById('page-home').style.display    = name === 'home'    ? '' : 'none';
+  document.getElementById('page-gallery').style.display = name === 'gallery' ? '' : 'none';
+  document.getElementById('page-about').style.display   = name === 'about'   ? '' : 'none';
+  window.scrollTo(0, 0);
+  if (name === 'gallery' && allIds.length === 0) {
+    showSkeletons(20);
+    fetchAllChildren().then(() => clearSkeletons());
+  }
+}
 
-  while (true) {
+async function fetchAllChildren() {
+  let page = 0;
+  let more = true;
+
+  while (more) {
     try {
-      const url  = `${HIRO}?genesis_id=${PARENT}&limit=${limit}&offset=${offset}`;
+      const url = page === 0
+        ? `${ORD}/r/children/${PARENT}`
+        : `${ORD}/r/children/${PARENT}/${page}`;
+
       const res  = await fetch(url);
-      if (!res.ok) throw new Error('hiro failed');
+      if (!res.ok) break;
       const data = await res.json();
 
-      // First call — get total
-      if (total === null) total = data.total || 100;
+      const ids    = data.ids || [];
+      more = data.more || false;
 
-      const results = data.results || [];
-      if (results.length === 0) break;
+      const newIds = ids.filter(id => !seenIds.has(id));
+      newIds.forEach(id => seenIds.add(id));
+      allIds = [...allIds, ...newIds];
 
-      const ids = results
-        .map(r => r.id)
-        .filter(id => id && !seenIds.has(id));
+      if (newIds.length > 0) appendCards(newIds);
 
-      ids.forEach(id => seenIds.add(id));
-      allIds = [...allIds, ...ids];
-      if (ids.length) appendCards(ids);
+      updateGalleryStatus();
 
-      const sl = document.getElementById('load-status');
-      if (sl) sl.textContent = `${allIds.length} / ${total} inscriptions`;
-      const el = document.getElementById('stat-loaded');
-      if (el) el.textContent = allIds.length;
-
-      if (results.length < limit) break;
-      offset += limit;
-      if (offset > 600) break; // safety cap
+      if (!more || ids.length === 0) break;
+      page++;
     } catch(e) {
-      // Fallback: ordinals.com JSON via allorigins proxy
-      try {
-        const page   = Math.floor(offset / 100);
-        const apiUrl = page === 0
-          ? `${ORD}/r/children/${PARENT}`
-          : `${ORD}/r/children/${PARENT}/${page}`;
-        const proxy  = `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`;
-        const res    = await fetch(proxy);
-        const outer  = await res.json();
-        const data   = JSON.parse(outer.contents);
-        const ids    = (data.ids || []).filter(id => !seenIds.has(id));
-        if (ids.length === 0) break;
-        ids.forEach(id => seenIds.add(id));
-        allIds = [...allIds, ...ids];
-        appendCards(ids);
-        const sl = document.getElementById('load-status');
-        if (sl) sl.textContent = allIds.length + ' inscriptions';
-        const el = document.getElementById('stat-loaded');
-        if (el) el.textContent = allIds.length;
-        if (!data.more) break;
-        offset += 100;
-      } catch(e2) { break; }
+      console.warn('Gallery fetch page', page, e);
+      break;
     }
   }
 
-  clearSkeletons();
-  const sl = document.getElementById('load-status');
-  if (sl) sl.textContent = allIds.length + ' inscriptions loaded';
+  updateGalleryStatus(true);
 }
 
-// prefetchCount uses same Hiro API
+function updateGalleryStatus(done = false) {
+  const sl = document.getElementById('load-status');
+  const el = document.getElementById('stat-loaded');
+  if (sl) sl.textContent = done ? `${allIds.length} inscriptions` : `Loading... ${allIds.length} found`;
+  if (el) el.textContent = allIds.length;
+}
+
 async function prefetchCount() {
-  if (allIds.length > 0) return;
   try {
-    const res  = await fetch(`https://api.hiro.so/ordinals/v1/inscriptions?genesis_id=${PARENT}&limit=1`);
+    const res  = await fetch(`${ORD}/r/children/${PARENT}`);
     const data = await res.json();
     const el   = document.getElementById('stat-loaded');
-    if (el && data.total) el.textContent = data.total;
+    if (el && data.ids) el.textContent = data.ids.length + (data.more ? '+' : '');
   } catch(e) {}
 }
 
@@ -1026,25 +995,20 @@ function appendCards(ids) {
   if (!grid) return;
   ids.forEach(iid => {
     cardCount++;
-    const n  = cardCount;
-    const el = document.createElement('div');
+    const num = cardCount;
+    const el  = document.createElement('div');
     el.className = 'piece-card';
+    el.onclick   = () => openLb(iid, num);
     el.innerHTML = `
       <div class="p-img">
-        <iframe
-          src="${ORD}/preview/${iid}"
-          loading="lazy"
-          scrolling="no"
-          sandbox="allow-scripts allow-same-origin"
-          style="width:100%;height:100%;border:none;pointer-events:none;display:block;">
-        </iframe>
+        <img src="${ORD}/content/${iid}" alt="UNION #${num}" loading="lazy"
+          onerror="this.style.display='none';this.parentNode.style.background='#1a1a1a'">
         <div class="p-overlay"><span>View</span></div>
       </div>
       <div class="p-info">
-        <div class="p-num">UNION #${n}</div>
-        <div class="p-id">${iid.slice(0,12)}…${iid.slice(-6)}</div>
+        <div class="p-num">UNION #${num}</div>
+        <div class="p-id">${iid.slice(0,14)}…${iid.slice(-6)}</div>
       </div>`;
-    el.addEventListener('click', () => openLb(iid, n));
     grid.appendChild(el);
   });
 }
@@ -1053,10 +1017,10 @@ function showSkeletons(n) {
   const grid = document.getElementById('main-grid');
   if (!grid) return;
   for (let i = 0; i < n; i++) {
-    const el = document.createElement('div');
-    el.className = 'sk sk-placeholder';
-    el.innerHTML = '<div class="sk-img"></div><div class="sk-line"></div><div class="sk-line sm"></div>';
-    grid.appendChild(el);
+    const sk = document.createElement('div');
+    sk.className = 'sk sk-placeholder';
+    sk.innerHTML = '<div class="sk-img"></div><div class="sk-line"></div><div class="sk-line sm"></div>';
+    grid.appendChild(sk);
   }
 }
 function clearSkeletons() {
@@ -1066,9 +1030,8 @@ function clearSkeletons() {
 // ── LIGHTBOX ──────────────────────────────────
 function openLb(iid, n) {
   const prev = document.getElementById('lb-preview');
-  prev.innerHTML = `<iframe src="${ORD}/preview/${iid}"
-    style="width:100%;height:100%;border:none;display:block;"
-    sandbox="allow-scripts allow-same-origin"></iframe>`;
+  prev.innerHTML = `<img src="${ORD}/content/${iid}" alt="UNION #${num}"
+    onerror="this.outerHTML='<iframe src=\"${ORD}/preview/${iid}\" style=\"width:100%;height:100%;border:none\"></iframe>'">`;
   document.getElementById('lb-num').textContent  = `UNION #${n} of ${allIds.length}`;
   document.getElementById('lb-iid').textContent  = iid;
   document.getElementById('lb-link').href        = `${ORD}/inscription/${iid}`;
