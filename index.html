@@ -715,7 +715,6 @@ body.light #wallet-btn { background:var(--acid); color:#fff; }
       <div class="lb-pricebox"><div class="lb-price-lbl">Marketplace</div><div class="lb-price-val">Ordinals.com</div></div>
       <div class="lb-traits" id="lb-traits"></div>
       <a id="lb-link" href="#" target="_blank" class="btn-primary" style="margin-top:auto">View Inscription ↗</a>
-      <a id="lb-collection-link" href="https://ordinals.com/children/2f0731248115d5472d6b554aad5073a96a960e0b5b39618e5f6d5e43cfd3b217i0" target="_blank" class="btn-ghost" style="text-align:center;justify-content:center;">View Full Collection ↗</a>
     </div>
   </div>
 </div>
@@ -999,7 +998,6 @@ function appendCards(ids) {
     const num = cardCount;
     const el  = document.createElement('div');
     el.className = 'piece-card';
-    el.onclick   = () => openLb(iid, num);
     el.innerHTML = `
       <div class="p-img">
         <img src="${ORD}/content/${iid}" alt="UNION #${num}" loading="lazy"
@@ -1010,6 +1008,7 @@ function appendCards(ids) {
         <div class="p-num">UNION #${num}</div>
         <div class="p-id">${iid.slice(0,14)}…${iid.slice(-6)}</div>
       </div>`;
+    el.addEventListener('click', () => openLb(iid, num));
     grid.appendChild(el);
   });
 }
