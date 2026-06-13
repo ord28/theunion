@@ -714,11 +714,6 @@ body.light #wallet-btn { background:var(--acid); color:#fff; }
       <div class="lb-iid" id="lb-iid"></div>
       <div class="lb-pricebox"><div class="lb-price-lbl">Marketplace</div><div class="lb-price-val">Ordinals.com</div></div>
       <div class="lb-traits" id="lb-traits"></div>
-      <div id="lb-listing" style="display:none;background:var(--void);border:1px solid var(--acid);padding:12px 16px;margin-bottom:4px;">
-        <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);margin-bottom:4px;">Listed Price</div>
-        <div id="lb-price-val" style="font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--acid);">—</div>
-      </div>
-      <a id="lb-buy-btn" href="#" target="_blank" class="btn-primary" style="display:none;margin-top:0;background:var(--acid);color:#000;font-weight:700;">Buy on Ord.net ↗</a>
       <a id="lb-link" href="#" target="_blank" class="btn-primary" style="margin-top:auto">View on Ordinals.com ↗</a>
     </div>
   </div>
@@ -1045,33 +1040,8 @@ function openLb(iid, num) {
   ].map(([k,v]) => `<div class="lb-trait"><div class="lb-trait-k">${k}</div><div class="lb-trait-v">${v}</div></div>`).join('');
   document.getElementById('lightbox').classList.add('open');
   document.body.style.overflow = 'hidden';
-  // Reset buy button, then check listing
-  const buyBtn  = document.getElementById('lb-buy-btn');
-  const listBox = document.getElementById('lb-listing');
-  buyBtn.style.display  = 'none';
-  listBox.style.display = 'none';
-  checkOrdNetListing(iid);
 }
 
-async function checkOrdNetListing(iid) {
-  // ord.net API: /v1/inscriptions/{id} — includes listing price if on sale
-  try {
-    const res  = await fetch(`https://ord.net/api/v1/inscriptions/${iid}`);
-    if (!res.ok) return;
-    const data = await res.json();
-    const price = data?.listing?.price || data?.price || null; // sats
-    const buyBtn  = document.getElementById('lb-buy-btn');
-    const listBox = document.getElementById('lb-listing');
-    const priceEl = document.getElementById('lb-price-val');
-    if (price && price > 0) {
-      const btc = (price / 1e8).toFixed(6).replace(/\.?0+$/, '');
-      priceEl.textContent = btc + ' BTC';
-      listBox.style.display = '';
-      buyBtn.href = `https://ord.net/inscription/${iid}`;
-      buyBtn.style.display = '';
-    }
-  } catch(e) { /* listing check failed silently */ }
-}
 
 function closeLb(e) {
   if (e.target !== document.getElementById('lightbox')) return;
@@ -1080,8 +1050,6 @@ function closeLb(e) {
 function forceCloseLb() {
   document.getElementById('lightbox').classList.remove('open');
   document.getElementById('lb-preview').innerHTML = '';
-  document.getElementById('lb-buy-btn').style.display = 'none';
-  document.getElementById('lb-listing').style.display = 'none';
   document.body.style.overflow = '';
 }
 
