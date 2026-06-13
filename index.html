@@ -939,72 +939,58 @@ fetchBTC();
 setInterval(fetchBTC, 60000);
 
 
-// ── PREFETCH COUNT for home page stat ─────────
-async function prefetchCount() {
-  if (allIds.length > 0) return; // already loaded
-  try {
-    const res  = await fetch(`${ORD}/r/children/${PARENT}`);
-    const data = await res.json();
-    const ids  = data.ids || [];
-    ids.forEach(id => { if (!seenIds.has(id)) { seenIds.add(id); allIds.push(id); } });
-    const el = document.getElementById('stat-loaded');
-    if (el) el.textContent = allIds.length;
-    // Keep fetching more pages silently
-    if (data.more) {
-      let page = 1;
-      while (true) {
-        const r2   = await fetch(`${ORD}/r/children/${PARENT}/${page}`);
-        const d2   = await r2.json();
-        (d2.ids||[]).forEach(id => { if (!seenIds.has(id)) { seenIds.add(id); allIds.push(id); } });
-        if (el) el.textContent = allIds.length;
-        if (!d2.more || (d2.ids||[]).length === 0) break;
-        page++;
-      }
-    }
-  } catch(e) {}
-}
-
-// ── GALLERY — fetch all children ──────────────
-let allIds   = [];
-let seenIds  = new Set();
+// ── GALLERY — fetch via Hiro API (CORS-safe) ──
+let allIds    = [];
+let seenIds   = new Set();
 let cardCount = 0;
 
 async function fetchAllChildren() {
-  let page = 0;
-  let more = true;
+  const HIRO   = 'https://api.hiro.so/ordinals/v1/inscriptions';
+  let offset   = 0;
+  const limit  = 60;
+  let total    = null;
 
-  while (more) {
+  while (true) {
     try {
-      // Try JSON endpoint first
-      const url  = page === 0
-        ? `${ORD}/r/children/${PARENT}`
-        : `${ORD}/r/children/${PARENT}/${page}`;
-
-      const res  = await fetch(url, { headers: { 'Accept': 'application/json' } });
-      if (!res.ok) throw new Error('not ok');
+      const url  = `${HIRO}?genesis_id=${PARENT}&limit=${limit}&offset=${offset}`;
+      const res  = await fetch(url);
+      if (!res.ok) throw new Error('hiro failed');
       const data = await res.json();
-      const ids  = (data.ids || []).filter(id => !seenIds.has(id));
+
+      // First call — get total
+      if (total === null) total = data.total || 100;
+
+      const results = data.results || [];
+      if (results.length === 0) break;
+
+      const ids = results
+        .map(r => r.id)
+        .filter(id => id && !seenIds.has(id));
+
       ids.forEach(id => seenIds.add(id));
       allIds = [...allIds, ...ids];
       if (ids.length) appendCards(ids);
-      more = !!(data.more) && (data.ids||[]).length > 0;
+
       const sl = document.getElementById('load-status');
-      if (sl) sl.textContent = allIds.length + ' inscriptions';
+      if (sl) sl.textContent = `${allIds.length} / ${total} inscriptions`;
       const el = document.getElementById('stat-loaded');
       if (el) el.textContent = allIds.length;
-      page++;
-      if (page > 15) break; // safety cap
+
+      if (results.length < limit) break;
+      offset += limit;
+      if (offset > 600) break; // safety cap
     } catch(e) {
-      // Fallback: parse HTML children page
+      // Fallback: ordinals.com JSON via allorigins proxy
       try {
-        const url  = page === 0
-          ? `${ORD}/children/${PARENT}`
-          : `${ORD}/children/${PARENT}/${page}`;
-        const res  = await fetch(url);
-        if (!res.ok) break;
-        const text = await res.text();
-        const matches = [...text.matchAll(/href="\/inscription\/([a-f0-9]{64}i\d+)"/g)];
-        const ids = matches.map(m => m[1]).filter(id => !seenIds.has(id));
+        const page   = Math.floor(offset / 100);
+        const apiUrl = page === 0
+          ? `${ORD}/r/children/${PARENT}`
+          : `${ORD}/r/children/${PARENT}/${page}`;
+        const proxy  = `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`;
+        const res    = await fetch(proxy);
+        const outer  = await res.json();
+        const data   = JSON.parse(outer.contents);
+        const ids    = (data.ids || []).filter(id => !seenIds.has(id));
         if (ids.length === 0) break;
         ids.forEach(id => seenIds.add(id));
         allIds = [...allIds, ...ids];
@@ -1013,16 +999,26 @@ async function fetchAllChildren() {
         if (sl) sl.textContent = allIds.length + ' inscriptions';
         const el = document.getElementById('stat-loaded');
         if (el) el.textContent = allIds.length;
-        // If fewer than 15 returned, likely last page
-        if (ids.length < 15) break;
-        page++;
-        if (page > 15) break;
+        if (!data.more) break;
+        offset += 100;
       } catch(e2) { break; }
     }
   }
+
   clearSkeletons();
   const sl = document.getElementById('load-status');
   if (sl) sl.textContent = allIds.length + ' inscriptions loaded';
+}
+
+// prefetchCount uses same Hiro API
+async function prefetchCount() {
+  if (allIds.length > 0) return;
+  try {
+    const res  = await fetch(`https://api.hiro.so/ordinals/v1/inscriptions?genesis_id=${PARENT}&limit=1`);
+    const data = await res.json();
+    const el   = document.getElementById('stat-loaded');
+    if (el && data.total) el.textContent = data.total;
+  } catch(e) {}
 }
 
 function appendCards(ids) {
@@ -1033,8 +1029,6 @@ function appendCards(ids) {
     const n  = cardCount;
     const el = document.createElement('div');
     el.className = 'piece-card';
-
-    // Use iframe embed — guaranteed cross-origin from ordinals.com
     el.innerHTML = `
       <div class="p-img">
         <iframe
