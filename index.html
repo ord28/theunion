@@ -733,7 +733,6 @@ body.light #wallet-btn { background:rgba(255,255,255,.47); color:var(--orange); 
   </div>
   <div class="bb-right">
     <button class="bb-btn" id="theme-btn" onclick="toggleTheme()">🌙</button>
-    <button class="bb-btn" id="mute-btn" type="button">♪</button>
   </div>
 </div>
 
@@ -766,78 +765,6 @@ sideDrawer.addEventListener('mouseleave', scheduleClose);
 document.addEventListener('click', e => {
   if (!e.target.closest('#side-tab') && !e.target.closest('#side-drawer')) closeDrawer();
 });
-
-// ── AUDIO — starts on load, mute to stop ─────
-let audioCtx   = null;
-let masterGain = null;
-let audioMuted = false;
-let audioOn    = false;
-const VOLUME   = 0.18;
-
-function buildAmbient() {
-  if (audioOn) return;
-  try {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const start = () => {
-      const notes = [
-        [130.81, 0.9], [164.81, 0.7], [196.00, 0.6],
-        [246.94, 0.5], [261.63, 0.4], [329.63, 0.35],
-      ];
-      masterGain = audioCtx.createGain();
-      masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
-      masterGain.gain.linearRampToValueAtTime(VOLUME, audioCtx.currentTime + 4);
-      masterGain.connect(audioCtx.destination);
-      notes.forEach(([freq, amp]) => {
-        [1, 1.0015].forEach((det, i) => {
-          const o = audioCtx.createOscillator();
-          const g = audioCtx.createGain();
-          o.type = 'sine';
-          o.frequency.value = freq * det;
-          g.gain.value = amp * (i === 0 ? 0.06 : 0.03);
-          o.connect(g); g.connect(masterGain);
-          o.start();
-        });
-      });
-      audioOn = true;
-    };
-    audioCtx.state === 'suspended'
-      ? audioCtx.resume().then(start)
-      : start();
-  } catch(e) {}
-}
-
-function toggleMute() {
-  if (!audioOn) { buildAmbient(); return; }
-  audioMuted = !audioMuted;
-  if (masterGain) {
-    masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
-    masterGain.gain.linearRampToValueAtTime(
-      audioMuted ? 0 : VOLUME, audioCtx.currentTime + 0.4
-    );
-  }
-  const btn = document.getElementById('mute-btn');
-  if (btn) btn.textContent = audioMuted ? '🔇' : '♪';
-}
-
-// AUTO-START: try immediately (desktop), fallback on first gesture (mobile/iOS)
-function tryAutoStart() {
-  buildAmbient();
-}
-
-// Desktop: try right away
-tryAutoStart();
-
-// Mobile/iOS: AudioContext needs a user gesture — start on very first interaction
-let gestureStarted = false;
-function gestureStart() {
-  if (gestureStarted) return;
-  gestureStarted = true;
-  buildAmbient();
-}
-document.addEventListener('touchstart', gestureStart, { once: true, passive: true });
-document.addEventListener('touchend',   gestureStart, { once: true, passive: true });
-document.addEventListener('click',      gestureStart, { once: true, passive: true });
-sideTab.addEventListener('click', gestureStart);
 
 // ── THEME ─────────────────────────────────────
 function toggleTheme() {
