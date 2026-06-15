@@ -1103,22 +1103,21 @@ function showToast(msg) {
 
 async function fetchHolders() {
   try {
-    // Try ord.net collection stats API
-    const res  = await fetch('https://ord.net/api/v1/collections/theunion');
-    if (!res.ok) throw new Error('ord.net failed');
-    const data = await res.json();
-    const count = data?.owners || data?.holder_count || data?.unique_owners || null;
-    if (count && count > 0) {
-      updateHolders(count);
-      return;
+    // Hiro API: fetch all inscriptions under parent, collect unique owner wallets
+    let offset = 0, limit = 60, owners = new Set(), more = true;
+    while (more) {
+      const res  = await fetch(
+        `https://api.hiro.so/ordinals/v1/inscriptions?parent=${PARENT}&limit=${limit}&offset=${offset}`
+      );
+      if (!res.ok) break;
+      const data = await res.json();
+      const results = data.results || [];
+      results.forEach(i => { if (i.address) owners.add(i.address); });
+      offset += results.length;
+      more = (results.length === limit && offset < (data.total || 0));
     }
-  } catch(e) {}
-  try {
-    // Fallback: Hiro API — count unique addresses holding parent children
-    const res  = await fetch('https://api.hiro.so/ordinals/v1/inscriptions?parent=' + PARENT + '&limit=1');
-    const data = await res.json();
-    if (data?.total) updateHolders(data.total);
-  } catch(e) {}
+    if (owners.size > 0) updateHolders(owners.size);
+  } catch(e) { console.warn('fetchHolders failed', e); }
 }
 
 function updateHolders(count) {
