@@ -1016,66 +1016,73 @@ function clearAddr() {
 }
 async function checkAddr() {
   const addr = document.getElementById('addr-input').value.trim();
-  const badge  = document.getElementById('addr-badge');
+  const badge   = document.getElementById('addr-badge');
   const countEl = document.getElementById('addr-count');
-  const result = document.getElementById('addr-result');
+  const result  = document.getElementById('addr-result');
 
-  if (!addr.startsWith('bc1p') || addr.length < 40) {
+  if (!addr.startsWith('bc1') || addr.length < 14) {
     result.style.display = 'block';
-    badge.textContent = 'Invalid address';
-    badge.style.color = 'var(--dim)';
-    countEl.textContent = 'Please enter a valid Taproot (bc1p...) address.';
+    badge.textContent    = 'Invalid address';
+    badge.style.color    = 'var(--dim)';
+    countEl.textContent  = 'Please enter a valid Bitcoin address.';
     return;
   }
 
-  badge.textContent = 'Checking...';
-  badge.style.color = 'var(--dim)';
+  badge.textContent  = 'Checking...';
+  badge.style.color  = 'var(--dim)';
   countEl.textContent = '';
   result.style.display = 'block';
 
   try {
-    // Fetch all inscriptions held by this address
-    let page = 0, limit = 60, owned = [], more = true;
-    while (more) {
-      const res  = await fetch(`https://api.hiro.so/ordinals/v1/inscriptions?address=${addr}&limit=${limit}&offset=${page * limit}`);
-      const data = await res.json();
-      const results = data.results || [];
-      owned = owned.concat(results.map(i => i.id));
-      more = results.length === limit && owned.length < (data.total || 0);
-      page++;
-      if (page > 5) break; // max 300 inscriptions scanned
-    }
-
-    // Get parent children IDs to cross-reference
+    // Get parent children IDs first (use cached allIds if gallery was visited)
     let parentIds = new Set(allIds);
     if (parentIds.size === 0) {
-      const cr = await fetch(`${ORD}/r/children/${PARENT}`);
-      const cd = await cr.json();
-      (cd.ids || []).forEach(id => parentIds.add(id));
+      let page = 0, more = true;
+      while (more && page < 10) {
+        const url = page === 0
+          ? `${ORD}/r/children/${PARENT}`
+          : `${ORD}/r/children/${PARENT}/${page}`;
+        const r  = await fetch(url);
+        const d  = await r.json();
+        (d.ids || []).forEach(id => parentIds.add(id));
+        more = d.more || false;
+        page++;
+      }
     }
 
-    const ownedSet = new Set(owned);
-    const held = [...parentIds].filter(id => ownedSet.has(id)).length;
-    const shortAddr = addr.slice(0,8) + '...' + addr.slice(-6);
+    // Check each parent child ID — see if it belongs to this address
+    // ordinals.com/r/inscription/{id} returns JSON with address field
+    let held = 0;
+    const checks = [...parentIds];
+    const results = await Promise.allSettled(
+      checks.map(iid =>
+        fetch(`${ORD}/r/inscription/${iid}`)
+          .then(r => r.json())
+          .then(d => { if (d.address === addr) held++; })
+          .catch(() => {})
+      )
+    );
 
+    const shortAddr = addr.slice(0,8) + '...' + addr.slice(-6);
     if (held > 0) {
-      badge.textContent = '✓ HOLDER';
-      badge.style.color = 'var(--acid)';
+      badge.textContent  = '✓ HOLDER';
+      badge.style.color  = 'var(--acid)';
       countEl.textContent = `${shortAddr} holds ${held} Union piece${held > 1 ? 's' : ''}`;
       document.getElementById('wallet-btn').textContent = '✓ HOLDER';
       document.getElementById('wallet-btn').style.color = 'var(--acid)';
     } else {
-      badge.textContent = '✗ NOT A HOLDER';
-      badge.style.color = 'var(--orange)';
+      badge.textContent  = '✗ NOT A HOLDER';
+      badge.style.color  = 'var(--orange)';
       countEl.textContent = `${shortAddr} holds no Union pieces.`;
       document.getElementById('wallet-btn').textContent = 'Not a Holder';
       document.getElementById('wallet-btn').style.color = 'var(--dim)';
     }
     document.getElementById('addr-clear').style.display = 'block';
   } catch(e) {
-    badge.textContent = 'Error';
-    badge.style.color = 'var(--orange)';
+    badge.textContent   = 'Error';
+    badge.style.color   = 'var(--orange)';
     countEl.textContent = 'Could not fetch data. Try again.';
+    console.error('checkAddr error:', e);
   }
 }
 
