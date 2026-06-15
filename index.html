@@ -457,7 +457,7 @@ footer { padding:36px 32px 36px calc(var(--tab-w) + 28px); display:flex; align-i
 /* ── LIGHT MODE ─────────────────────────────── */
 body.light {
   --bg: #f0f0eb; --void:#e8e8e3; --panel:#fff; --border:#ccc;
-  --muted:#bbb; --dim:#666; --mid:#333; --white:#0a0a0a; --acid:#5a9000;
+  --muted:#bbb; --dim:#666; --mid:#333; --white:#0a0a0a; --acid:#c8ff00;
 }
 body.light .hero-bg { opacity:.22; }
 body.light .hero-bg::after {
@@ -530,7 +530,45 @@ body.light #wallet-btn { background:rgba(255,255,255,.47); color:var(--orange); 
   .stat-val { font-size:18px; }
   .btn-primary, .btn-ghost { width:90%; }
 }
-</style>
+
+  .addr-hint { font-size:11px; color:var(--dim); line-height:1.6; margin:0; letter-spacing:.03em; }
+  .addr-input {
+    width:100%; box-sizing:border-box;
+    background:var(--void); border:1px solid var(--border);
+    color:var(--white); font-family:'Space Mono',monospace; font-size:11px;
+    padding:13px 14px; outline:none; transition:border-color .2s;
+    clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,6px 100%,0 calc(100% - 6px));
+  }
+  .addr-input:focus { border-color:var(--acid); }
+  .addr-input::placeholder { color:var(--dim); }
+  .addr-btn {
+    width:100%; background:transparent; color:var(--orange);
+    font-family:'Space Mono',monospace; font-size:11px;
+    font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+    border:1.5px solid var(--orange); padding:13px; cursor:pointer;
+    transition:background .2s, color .2s;
+    clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,6px 100%,0 calc(100% - 6px));
+  }
+  .addr-btn:hover { background:rgba(255,107,26,.1); }
+  .addr-result {
+    background:var(--void); border:1px solid var(--border);
+    padding:14px 16px;
+  }
+  .addr-badge {
+    font-family:'Space Mono',monospace; font-size:11px;
+    font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+    margin-bottom:6px;
+  }
+  .addr-count { font-size:11px; color:var(--dim); letter-spacing:.03em; }
+  .addr-clear {
+    background:transparent; border:none; color:var(--dim);
+    font-size:10px; font-family:'Space Mono',monospace;
+    cursor:pointer; text-align:left; letter-spacing:.1em;
+    text-transform:uppercase; padding:0; transition:color .2s;
+  }
+  .addr-clear:hover { color:var(--white); }
+
+  </style>
 </head>
 <body>
 
@@ -635,31 +673,21 @@ body.light #wallet-btn { background:rgba(255,255,255,.47); color:var(--orange); 
       <span class="wallet-modal-title">Check Your Wallet</span>
       <button class="wallet-modal-close" onclick="closeAddrModal()">✕</button>
     </div>
-    <div class="wallet-modal-body" style="padding:20px;display:flex;flex-direction:column;gap:16px;">
-      <p style="font-size:12px;color:var(--dim);line-height:1.6;margin:0;">Paste your Taproot address to check if you hold a Union piece.</p>
-      <input id="addr-input" type="text" placeholder="bc1p..."
-        style="width:100%;box-sizing:border-box;background:var(--void);border:1px solid var(--border);color:var(--white);
-               font-family:'Space Mono',monospace;font-size:11px;padding:12px 14px;outline:none;
-               clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,6px 100%,0 calc(100% - 6px));"
+    <div class="wallet-modal-body">
+      <p class="addr-hint">Paste your Bitcoin address to check if you hold a Union piece.</p>
+      <input id="addr-input" class="addr-input" type="text" placeholder="bc1p..."
         onkeydown="if(event.key==='Enter')checkAddr()" />
-      <button onclick="checkAddr()"
-        style="background:var(--acid);color:#000;font-family:'Space Mono',monospace;font-size:11px;
-               font-weight:700;letter-spacing:.1em;text-transform:uppercase;border:none;padding:12px;
-               cursor:pointer;clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,6px 100%,0 calc(100% - 6px));">
-        Check Holdings
-      </button>
-      <div id="addr-result" style="display:none;padding:14px;border:1px solid var(--border);background:var(--void);">
-        <div id="addr-badge" style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.12em;margin-bottom:6px;"></div>
-        <div id="addr-count" style="font-size:11px;color:var(--dim);"></div>
+      <button class="addr-btn" onclick="checkAddr()">Check Holdings</button>
+      <div id="addr-result" class="addr-result" style="display:none;">
+        <div id="addr-badge" class="addr-badge"></div>
+        <div id="addr-count" class="addr-count"></div>
       </div>
-      <button id="addr-clear" onclick="clearAddr()" style="display:none;background:transparent;border:none;
-        color:var(--dim);font-size:10px;font-family:'Space Mono',monospace;cursor:pointer;text-align:left;
-        letter-spacing:.08em;text-transform:uppercase;">✕ Clear</button>
+      <button id="addr-clear" class="addr-clear" onclick="clearAddr()" style="display:none;">✕ Clear</button>
     </div>
   </div>
 </div>
 
-<!-- LIGHTBOX<!-- LIGHTBOX -->
+<!-- LIGHTBOX<!-- LIGHTBOX<!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox" onclick="closeLb(event)">
   <div class="lb-inner">
     <button class="lb-close" id="lb-close" onclick="forceCloseLb()">✕</button>
