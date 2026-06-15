@@ -599,7 +599,9 @@ body.light #wallet-btn { background:rgba(255,255,255,.6); color:var(--orange); b
   body.light .lightbox { background:rgba(0,0,0,.75); }
 
   /* About page light mode */
-  body.light .about-stat-val { color:#2d7a00; }
+  body.light .about-stat-val { color:#1a5c00 !important; }
+  body.light .about-stat-val[style*="var(--orange)"] { color:var(--orange) !important; }
+  body.light .about-stat-lbl { color:#555 !important; }
   body.light .about-stat-box { background:#fff; border-color:#ddd; }
   body.light .about-statement span[style*="var(--acid)"] { color:#2d7a00 !important; }
   body.light .about-eyebrow { color:#2d7a00; }
