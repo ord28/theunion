@@ -470,7 +470,16 @@ body.light .stat-val { color:#0a0a0a !important; text-shadow:none; }
 body.light .stat-val.hi { color:#2d7a00 !important; }
 body.light .stat-lbl { color:#555 !important; }
 body.light #side-tab { background:rgba(220,220,215,.92); border-right-color:rgba(90,144,0,.3); }
-body.light #side-drawer { background:rgba(230,230,225,.95); }
+body.light #side-drawer { background:rgba(235,235,230,.97); border-right-color:rgba(0,0,0,.08); }
+body.light .sd-brand-name { color:#0a0a0a; }
+body.light .sd-brand-name span { color:#2d7a00; }
+body.light .sd-nav li a,
+body.light .sd-nav li button { color:#333; }
+body.light .sd-nav li a:hover,
+body.light .sd-nav li button:hover { color:#0a0a0a; background:rgba(0,0,0,.05); }
+body.light .sd-nav li a.active { color:#0a0a0a; background:rgba(0,0,0,.06); }
+body.light .sd-divider { background:rgba(0,0,0,.1); }
+body.light .sd-footer { color:#888; }
 body.light .bb-floor { color:#2d7a00 !important; }
 body.light .bottom-bar { background:linear-gradient(to top,rgba(240,240,235,.9) 0%,rgba(240,240,235,0) 100%); }
 body.light footer { border-top-color:transparent; background:transparent; }
@@ -629,9 +638,18 @@ body.light #wallet-btn { background:rgba(255,255,255,.6); color:var(--orange); b
       <button class="btn-primary" onclick="showPage('gallery')">View Gallery</button>
       <a href="https://ord.net/collection/theunion" target="_blank" class="btn-ghost">Buy on Ord.net ↗</a>
     </div>
-<div class="gallery-section">
-    <div class="pieces-grid" id="main-grid"></div>
+<div id="page-gallery" style="display:none;">
+<div class="gallery-header">
+  <div class="section-eyebrow" style="color:var(--orange);">Bitcoin Ordinals · 100 Inscriptions</div>
+  <h2 class="section-title">The Collection</h2>
+  <div class="gallery-meta">
+    <span id="load-status">Loading...</span>
+    <button class="btn-ghost btn-sm" onclick="showPage('home')">← Back</button>
   </div>
+</div>
+<div class="gallery-section">
+  <div class="pieces-grid" id="main-grid"></div>
+</div>
 </div>
 
 <!-- ABOUT PAGE -->
