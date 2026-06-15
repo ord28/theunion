@@ -473,7 +473,9 @@ body.light #side-tab { background:rgba(220,220,215,.92); border-right-color:rgba
 body.light #side-drawer { background:rgba(230,230,225,.95); }
 body.light .bottom-bar { background:linear-gradient(to top,rgba(240,240,235,.9) 0%,rgba(240,240,235,0) 100%); }
 body.light footer { border-top-color:transparent; background:transparent; }
-body.light #wallet-btn { background:rgba(255,255,255,.47); color:var(--orange); border:none; }
+body.light #wallet-btn { background:rgba(255,255,255,.6); color:var(--orange); border:1px solid rgba(255,107,26,.3); }
+  .light #wallet-btn[data-state="holder"] { background:rgba(0,0,0,.08); color:#2d7a00; border:1px solid #2d7a00; }
+  .light #wallet-btn[data-state="none"]   { background:rgba(255,255,255,.6); color:var(--orange); border:1px solid rgba(255,107,26,.3); }
 
 /* ── MOBILE ─────────────────────────────────── */
 @media(max-width:768px) {
@@ -554,6 +556,8 @@ body.light #wallet-btn { background:rgba(255,255,255,.47); color:var(--orange); 
     background:var(--void); border:1px solid var(--border);
     padding:14px 16px;
   }
+  .light .addr-result { background:#fff; border-color:#bbb; }
+  .light .addr-count  { color:#444; }
   .addr-badge {
     font-family:'Space Mono',monospace; font-size:11px;
     font-weight:700; letter-spacing:.14em; text-transform:uppercase;
@@ -1093,17 +1097,21 @@ async function checkAddr() {
 
     const shortAddr = addr.slice(0,8) + '...' + addr.slice(-6);
     if (held > 0) {
-      badge.textContent  = '✓ HOLDER';
-      badge.style.color  = 'var(--acid)';
+      badge.textContent = '✓ HOLDER';
+      badge.style.color = document.body.classList.contains('light') ? '#2d7a00' : 'var(--acid)';
       countEl.textContent = `${shortAddr} holds ${held} Union piece${held > 1 ? 's' : ''}`;
-      document.getElementById('wallet-btn').textContent = '✓ HOLDER';
-      document.getElementById('wallet-btn').style.color = 'var(--acid)';
+      const wb = document.getElementById('wallet-btn');
+      wb.textContent = '✓ HOLDER';
+      wb.style.color = 'var(--acid)';
+      wb.dataset.state = 'holder';
     } else {
-      badge.textContent  = '✗ NOT A HOLDER';
-      badge.style.color  = 'var(--orange)';
+      badge.textContent = '✗ NOT A HOLDER';
+      badge.style.color = 'var(--orange)';
       countEl.textContent = `${shortAddr} holds no Union pieces.`;
-      document.getElementById('wallet-btn').textContent = 'Not a Holder';
-      document.getElementById('wallet-btn').style.color = 'var(--dim)';
+      const wb2 = document.getElementById('wallet-btn');
+      wb2.textContent = 'Not a Holder';
+      wb2.style.color = 'var(--dim)';
+      wb2.dataset.state = 'none';
     }
     document.getElementById('addr-clear').style.display = 'block';
   } catch(e) {
