@@ -565,7 +565,7 @@ body.light #wallet-btn { background:rgba(255,255,255,.47); color:var(--orange); 
 
 <!-- NAV -->
 <nav>
-  <button id="wallet-btn" onclick="connectWallet()">Connect Wallet</button>
+  <button id="wallet-btn" onclick="openAddrModal()">Check Wallet</button>
 </nav>
 
 <!-- HOME PAGE -->
@@ -586,46 +586,7 @@ body.light #wallet-btn { background:rgba(255,255,255,.47); color:var(--orange); 
       <button class="btn-primary" onclick="showPage('gallery')">View Gallery</button>
       <a href="https://ord.net/collection/theunion" target="_blank" class="btn-ghost">Buy on Ord.net ↗</a>
     </div>
-    <div class="wallet-panel" id="wallet-panel">
-      <div class="wallet-addr" id="wallet-addr">—</div>
-      <div class="holdings-row">
-        <div class="holdings-num" id="holdings-count">0</div>
-        <div class="holdings-info">
-          <div class="holdings-title">UNION pieces held</div>
-          <div class="holdings-sub" id="holdings-sub">Checking...</div>
-        </div>
-        <span class="holder-badge badge-no" id="holder-badge">—</span>
-      </div>
-      <button class="disconnect-btn" onclick="disconnectWallet()">Disconnect</button>
-    </div>
-    <div class="scroll-hint"><div class="scroll-line"></div></div>
-  </section>
-  <footer>
-    <div class="footer-logo">THE<span>UNION</span></div>
-    <div class="footer-links">
-      <a href="https://ord.net/collection/theunion" target="_blank">Ord.net</a>
-      <a href="https://www.satflow.com/ordinals/theunion" target="_blank">Satflow</a>
-      <a href="https://ord-dropz.xyz/secondary/collections/theunion" target="_blank">Ord Dropz</a>
-      <a href="https://discord.gg/sF887qQnFw" target="_blank">Discord</a>
-      <a href="https://x.com/theunion100" target="_blank">@theunion100</a>
-      <a href="https://x.com/oceanord28" target="_blank">@oceanord28</a>
-    </div>
-  </footer>
-</div>
-
-<!-- GALLERY PAGE -->
-<div id="page-gallery" style="display:none;">
-  <div class="gallery-page-header">
-    <div>
-      <div class="section-eyebrow" style="color:var(--orange);">Bitcoin Ordinals · 100 Inscriptions</div>
-      <h2 class="section-h">The Collection</h2>
-    </div>
-    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-      <span class="load-status" id="load-status">Fetching from chain...</span>
-      <button class="gallery-back" onclick="showPage('home')">← Back</button>
-    </div>
-  </div>
-  <div class="gallery-section">
+<div class="gallery-section">
     <div class="pieces-grid" id="main-grid"></div>
   </div>
 </div>
@@ -668,46 +629,37 @@ body.light #wallet-btn { background:rgba(255,255,255,.47); color:var(--orange); 
 
 
 <!-- WALLET MODAL -->
-<div class="wallet-modal-overlay" id="wallet-modal-overlay" onclick="if(event.target===this)closeWalletModal()">
+<div class="wallet-modal-overlay" id="wallet-modal-overlay" onclick="if(event.target===this)closeAddrModal()">
   <div class="wallet-modal">
     <div class="wallet-modal-header">
-      <span class="wallet-modal-title">Connect Wallet</span>
-      <button class="wallet-modal-close" onclick="closeWalletModal()">✕</button>
+      <span class="wallet-modal-title">Check Your Wallet</span>
+      <button class="wallet-modal-close" onclick="closeAddrModal()">✕</button>
     </div>
-    <div class="wallet-modal-body">
-
-      <button class="wallet-option" onclick="connectSpecific('xverse')">
-        <div class="wallet-option-icon" style="background:#1a1a2e;">
-          <img src="https://www.xverse.app/favicon.ico" width="24" height="24" onerror="this.outerHTML='₿'" style="border-radius:4px">
-        </div>
-        <div class="wallet-option-info">
-          <span class="wallet-option-name">Xverse</span>
-          <span class="wallet-option-desc">Bitcoin & Ordinals wallet</span>
-        </div>
-        <span class="wallet-option-arrow">→</span>
+    <div class="wallet-modal-body" style="padding:20px;display:flex;flex-direction:column;gap:16px;">
+      <p style="font-size:12px;color:var(--dim);line-height:1.6;margin:0;">Paste your Taproot address to check if you hold a Union piece.</p>
+      <input id="addr-input" type="text" placeholder="bc1p..."
+        style="width:100%;box-sizing:border-box;background:var(--void);border:1px solid var(--border);color:var(--white);
+               font-family:'Space Mono',monospace;font-size:11px;padding:12px 14px;outline:none;
+               clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,6px 100%,0 calc(100% - 6px));"
+        onkeydown="if(event.key==='Enter')checkAddr()" />
+      <button onclick="checkAddr()"
+        style="background:var(--acid);color:#000;font-family:'Space Mono',monospace;font-size:11px;
+               font-weight:700;letter-spacing:.1em;text-transform:uppercase;border:none;padding:12px;
+               cursor:pointer;clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,6px 100%,0 calc(100% - 6px));">
+        Check Holdings
       </button>
-
-      <button class="wallet-option" onclick="connectSpecific('unisat')">
-        <div class="wallet-option-icon" style="background:#1a1a1a;">
-          <img src="https://unisat.io/favicon.ico" width="24" height="24" onerror="this.outerHTML='🟡'" style="border-radius:4px">
-        </div>
-        <div class="wallet-option-info">
-          <span class="wallet-option-name">Unisat</span>
-          <span class="wallet-option-desc">Bitcoin Ordinals wallet</span>
-        </div>
-        <span class="wallet-option-arrow">→</span>
-      </button>
-
-    </div>
-    <div class="wallet-modal-footer">
-      New to Bitcoin wallets?
-      <a href="https://www.xverse.app" target="_blank">Get Xverse</a> &nbsp;·&nbsp;
-      <a href="https://unisat.io" target="_blank">Get Unisat</a>
+      <div id="addr-result" style="display:none;padding:14px;border:1px solid var(--border);background:var(--void);">
+        <div id="addr-badge" style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.12em;margin-bottom:6px;"></div>
+        <div id="addr-count" style="font-size:11px;color:var(--dim);"></div>
+      </div>
+      <button id="addr-clear" onclick="clearAddr()" style="display:none;background:transparent;border:none;
+        color:var(--dim);font-size:10px;font-family:'Space Mono',monospace;cursor:pointer;text-align:left;
+        letter-spacing:.08em;text-transform:uppercase;">✕ Clear</button>
     </div>
   </div>
 </div>
 
-<!-- LIGHTBOX -->
+<!-- LIGHTBOX<!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox" onclick="closeLb(event)">
   <div class="lb-inner">
     <button class="lb-close" id="lb-close" onclick="forceCloseLb()">✕</button>
@@ -979,116 +931,19 @@ function forceCloseLb() {
 // ── WALLET ────────────────────────────────────
 let connectedAddr = null;
 
-function disconnectWallet() {
-  connectedAddr = null;
-  const btn = document.getElementById('wallet-btn');
-  btn.textContent = 'Connect Wallet';
-  btn.classList.remove('connected');
-  document.getElementById('wallet-panel').classList.remove('visible');
-  document.getElementById('holdings-count').textContent = '0';
-  document.getElementById('holdings-sub').textContent = 'No pieces detected';
-  document.getElementById('holder-badge').textContent = '—';
-  document.getElementById('holder-badge').className = 'holder-badge badge-no';
-  document.getElementById('wallet-addr').textContent = '—';
-}
 
-function connectWallet() {
-  if (connectedAddr) { disconnectWallet(); return; }
-  openWalletModal();
-}
 
-function openWalletModal() {
-  document.getElementById('wallet-modal-overlay').classList.add('open');
-}
 
-function closeWalletModal() {
-  document.getElementById('wallet-modal-overlay').classList.remove('open');
-}
 
-async function connectSpecific(walletType) {
-  closeWalletModal();
-  const btn = document.getElementById('wallet-btn');
-  btn.textContent = 'Connecting...';
 
-  try {
-    if (walletType === 'xverse') {
-      if (!window.XverseProviders?.BitcoinProvider) {
-        showToast('Xverse not found. Install it first.');
-        window.open('https://www.xverse.app', '_blank');
-        btn.textContent = 'Connect Wallet'; return;
-      }
-      const r = await window.XverseProviders.BitcoinProvider.request('getAccounts', {purposes:['ordinals']});
-      if (r?.result?.length) { onConnect(r.result[0].address, 'Xverse'); return; }
-    }
 
-    if (walletType === 'unisat') {
-      if (!window.unisat) {
-        showToast('Unisat not found. Install it first.');
-        window.open('https://unisat.io', '_blank');
-        btn.textContent = 'Connect Wallet'; return;
-      }
-      const a = await window.unisat.requestAccounts();
-      if (a?.length) { onConnect(a[0], 'Unisat'); return; }
-    }
 
-  } catch(e) {
-    showToast('Connection failed. Try again.');
-  }
 
-  btn.textContent = 'Connect Wallet';
-}
 
-function onConnect(address, wallet) {
-  connectedAddr = address;
-  const btn = document.getElementById('wallet-btn');
-  btn.textContent = address.slice(0,6)+'...'+address.slice(-4);
-  btn.classList.add('connected');
-  document.getElementById('wallet-addr').textContent = wallet+' · '+address;
-  document.getElementById('wallet-panel').classList.add('visible');
-  showToast(wallet+' connected ✓');
-  checkHoldings(address);
-}
 
-async function checkHoldings(address) {
-  const countEl = document.getElementById('holdings-count');
-  const subEl   = document.getElementById('holdings-sub');
-  const badgeEl = document.getElementById('holder-badge');
-  if (!countEl) return;
-  countEl.textContent = '...';
-  subEl.textContent   = 'Scanning...';
-  badgeEl.textContent = '—';
-  badgeEl.className   = 'holder-badge badge-no';
 
-  try {
-    // Fetch wallet inscriptions (paginate up to 600)
-    let walletIds = new Set();
-    for (let offset = 0; offset < 600; offset += 60) {
-      const res     = await fetch(`https://api.hiro.so/ordinals/v1/inscriptions?address=${address}&limit=60&offset=${offset}`);
-      const data    = await res.json();
-      const results = data.results || [];
-      results.forEach(i => walletIds.add(i.id));
-      if (results.length < 60) break;
-    }
-    // Cross-reference with TheUnion collection IDs
-    const count = allIds.filter(id => walletIds.has(id)).length;
-    countEl.textContent = count;
 
-    if (count > 0) {
-      subEl.textContent   = count === 1 ? '1 Union piece' : `${count} Union pieces`;
-      badgeEl.textContent = 'HOLDER';
-      badgeEl.className   = 'holder-badge badge-yes';
-      showToast(`${count} Union piece${count > 1 ? 's' : ''} found 🔥`);
-    } else {
-      subEl.textContent   = 'No Union pieces found';
-      badgeEl.textContent = 'Non-holder';
-      badgeEl.className   = 'holder-badge badge-no';
-    }
-  } catch(e) {
-    countEl.textContent = '?';
-    subEl.textContent   = 'Could not verify';
-    badgeEl.textContent = 'Error';
-  }
-}
+
 
 // ── TOAST ─────────────────────────────────────
 let toastTimer;
@@ -1141,6 +996,87 @@ function updateHolders(count) {
   const el2 = document.getElementById('about-stat-holders');
   if (el1) el1.textContent = count;
   if (el2) el2.textContent = count;
+}
+
+
+// ── ADDRESS CHECK ─────────────────────────────────
+function openAddrModal() {
+  document.getElementById('wallet-modal-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('addr-input').focus(), 100);
+}
+function closeAddrModal() {
+  document.getElementById('wallet-modal-overlay').classList.remove('open');
+}
+function clearAddr() {
+  document.getElementById('addr-input').value = '';
+  document.getElementById('addr-result').style.display = 'none';
+  document.getElementById('addr-clear').style.display = 'none';
+  document.getElementById('wallet-btn').textContent = 'Check Wallet';
+  document.getElementById('wallet-btn').style.color = 'var(--orange)';
+}
+async function checkAddr() {
+  const addr = document.getElementById('addr-input').value.trim();
+  const badge  = document.getElementById('addr-badge');
+  const countEl = document.getElementById('addr-count');
+  const result = document.getElementById('addr-result');
+
+  if (!addr.startsWith('bc1p') || addr.length < 40) {
+    result.style.display = 'block';
+    badge.textContent = 'Invalid address';
+    badge.style.color = 'var(--dim)';
+    countEl.textContent = 'Please enter a valid Taproot (bc1p...) address.';
+    return;
+  }
+
+  badge.textContent = 'Checking...';
+  badge.style.color = 'var(--dim)';
+  countEl.textContent = '';
+  result.style.display = 'block';
+
+  try {
+    // Fetch all inscriptions held by this address
+    let page = 0, limit = 60, owned = [], more = true;
+    while (more) {
+      const res  = await fetch(`https://api.hiro.so/ordinals/v1/inscriptions?address=${addr}&limit=${limit}&offset=${page * limit}`);
+      const data = await res.json();
+      const results = data.results || [];
+      owned = owned.concat(results.map(i => i.id));
+      more = results.length === limit && owned.length < (data.total || 0);
+      page++;
+      if (page > 5) break; // max 300 inscriptions scanned
+    }
+
+    // Get parent children IDs to cross-reference
+    let parentIds = new Set(allIds);
+    if (parentIds.size === 0) {
+      const cr = await fetch(`${ORD}/r/children/${PARENT}`);
+      const cd = await cr.json();
+      (cd.ids || []).forEach(id => parentIds.add(id));
+    }
+
+    const ownedSet = new Set(owned);
+    const held = [...parentIds].filter(id => ownedSet.has(id)).length;
+    const shortAddr = addr.slice(0,8) + '...' + addr.slice(-6);
+
+    if (held > 0) {
+      badge.textContent = '✓ HOLDER';
+      badge.style.color = 'var(--acid)';
+      countEl.textContent = `${shortAddr} holds ${held} Union piece${held > 1 ? 's' : ''}`;
+      document.getElementById('wallet-btn').textContent = '✓ HOLDER';
+      document.getElementById('wallet-btn').style.color = 'var(--acid)';
+    } else {
+      badge.textContent = '✗ NOT A HOLDER';
+      badge.style.color = 'var(--orange)';
+      countEl.textContent = `${shortAddr} holds no Union pieces.`;
+      document.getElementById('wallet-btn').textContent = 'Not a Holder';
+      document.getElementById('wallet-btn').style.color = 'var(--dim)';
+    }
+    document.getElementById('addr-clear').style.display = 'block';
+  } catch(e) {
+    badge.textContent = 'Error';
+    badge.style.color = 'var(--orange)';
+    countEl.textContent = 'Could not fetch data. Try again.';
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
